@@ -1,0 +1,116 @@
+[Probe]
+ probeNum=0
+
+ probeX0=2e-6
+ probeY0=20e-6
+
+[Domain]
+ dimension=2
+ current_order=3
+ interpolation_order=2
+ field_type=Split
+
+ max_step=5000
+ save_step=500
+ save_start=0
+ dump_save=1
+ dump_start=10000
+
+ L=1
+ M=2
+ N=1
+
+ moving_domain=0
+
+ minX=0
+ maxX=15e-6
+ minY=-25e-6
+ maxY=25e-6
+ lambda=1e-6
+ division_lambda=10	// dx is [wavelength/divisionLambda]
+ dy_over_dx = 10
+
+ boost_gamma=1
+ filter=0
+ filter_step=2
+
+ pml=0
+ pml_cells=10
+
+[Laser]
+ wavelength=1e-6
+ a0=0
+ rU=4			//number of wave lenth
+ rD=4
+ flat=0
+ polarity=2
+ loadPositionX=0e-5		//laser start position [m]
+ loadPositionY=0.0e-5		//laser start position [m]
+ beamWaist=0.8e-6
+ focus=2e-5
+
+
+[External]
+ Ex=0
+ Ey=0
+ Ez=0
+ Bx=0
+ By=0
+ Bz=0
+
+[Plasma]
+ species=Electron
+ type=Polygon
+ density=1e25
+ numberInCell=2
+ startIndex=0		//The starting particle index
+ temperature=0
+
+ Xnodes=4
+ X0=4e-6
+ X1=5e-6
+ X2=10e-6
+ X3=11e-6
+ Xn0=0
+ Xn1=1
+ Xn2=1
+ Xn3=0
+
+ Ynodes=4
+ Y0=-20e-6
+ Y1=-19e-6
+ Y2=19e-6
+ Y3=20e-6
+ Yn0=0
+ Yn1=1
+ Yn2=1
+ Yn3=0
+
+[Plasma]
+ species=HPlus1
+ type=Polygon
+ density=1e25
+ numberInCell=2
+ startIndex=0		//The starting particle index
+ temperature=0
+
+ Xnodes=4
+ X0=4e-6
+ X1=5e-6
+ X2=10e-6
+ X3=11e-6
+ Xn0=0
+ Xn1=1
+ Xn2=1
+ Xn3=0
+
+ Ynodes=4
+ Y0=-20e-6
+ Y1=-19e-6
+ Y2=19e-6
+ Y3=20e-6
+ Yn0=0
+ Yn1=1
+ Yn2=1
+ Yn3=0
+

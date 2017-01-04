@@ -1,0 +1,117 @@
+[Track]
+ numbers_ID=0
+
+ id0=11222
+ core0=9
+ species0=0
+
+ id1=
+ core1=
+ species1=
+
+[Domain]
+ tracking=OFF
+ save_mode=HDF
+
+ dimension=2
+ current_order=1
+ interpolation_order=1
+ field_type=Split
+
+ max_step=100
+ save_step=100
+ save_start=100
+
+ dump_save=ON
+ field_save=ON
+ raman_save=OFF
+ particle_save=OFF
+ density_save=ON
+ dump_start=10000
+
+ L=1
+ M=12
+ N=1
+
+ moving_domain=ON
+
+ minX=0
+ maxX=50e-6
+ minY=-30e-6
+ maxY=30e-6
+ minZ=-30e-6
+ maxZ=30e-6
+ lambda=1e-6
+ division_lambda=20	// dx is [wavelength/divisionLambda]
+ dy_over_dx = 10
+ dz_over_dx = 10
+
+ boost_gamma=1
+ filter=0
+ filter_step=2
+
+ pml=ON
+ pml_cells=5
+ pml_r=0.2
+ pml_d=0.4
+
+[Laser]
+ wavelength=1e-6
+ a0=3
+ rU=4			//number of wave lenth
+ rD=4
+ flat=0
+ polarity=2
+ loadPositionX=0e-5		//laser start position [m]
+ loadPositionY=0.0e-5		//laser start position [m]
+ loadPositionZ=0.0e-5		//laser start position [m]
+ beamWaist=10e-6
+ focus=100e-6
+
+
+[External]
+ Ex=0
+ Ey=0
+ Ez=0
+ Bx=0
+ By=0
+ Bz=0
+
+[Plasma]
+ species=Electron
+ type=Polygon
+ density=5e24
+ numberInCell=2
+ startIndex=0		//The starting particle index
+ temperature=0
+
+ Xnodes=4
+ X0=10e-6
+ X1=100e-6
+ X2=2000e-6
+ X3=10000e-6
+ Xn0=0
+ Xn1=1
+ Xn2=1
+ Xn3=1
+
+ Ynodes=4
+ Y0=-30e-6
+ Y1=-19e-6
+ Y2=19e-6
+ Y3=30e-6
+ Yn0=1
+ Yn1=1
+ Yn2=1
+ Yn3=1
+
+ Znodes=4
+ Z0=-30e-6
+ Z1=-19e-6
+ Z2=19e-6
+ Z3=30e-6
+ Zn0=1
+ Zn1=1
+ Zn2=1
+ Zn3=1
+
