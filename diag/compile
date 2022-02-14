@@ -1,0 +1,37 @@
+#!/bin/bash
+
+
+# beam server
+#CFLAGS="-I/opt/hdf5/1.8.20/include"
+#LDFLAGS="-L/opt/hdf5/1.8.20/lib"
+
+# PAL ubuntu
+CFLAGS="-I/usr/lib/x86_64-linux-gnu/hdf5/openmpi/include" 
+LDFLAGS="-L/usr/lib/x86_64-linux-gnu/hdf5/openmpi" 
+
+
+
+gcc -o fft fft.c -lm
+echo 'fft is made.'
+
+gcc -o centerField centerField.c -lm
+echo 'centerField is made.'
+
+mpicc -o field_cylind hdf_field_cylindrical.c -lm -lhdf5 ${CFLAGS} ${LDFLAGS}
+echo 'field_cylind is made.'
+
+mpicc -o field_cart hdf_field_cartesian.c -lm -lhdf5 ${CFLAGS} ${LDFLAGS}
+echo 'field_cart is made.'
+
+mpicc -o hdf_particle hdf_particle.c -lm -lhdf5 ${CFLAGS} ${LDFLAGS}
+echo 'hdf_particle is made.'
+
+gcc -o emittance emittance.c -lm
+echo 'emittance is made.'
+
+mpicc -o track track.c -lm -lhdf5 ${CFLAGS} ${LDFLAGS}
+echo 'track is made.'
+
+mpicc -o particle particle.c -lm -lhdf5 ${CFLAGS} ${LDFLAGS}
+echo 'particle is made.'
+
