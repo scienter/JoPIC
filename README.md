@@ -42,21 +42,22 @@ In writing....
 
 # 4. Postprocessing
 
-Output files are written in hdf5 file format. You may convert or explore output file using python or c programming.
+Output files are written in hdf5 file format. Output files can be converted or explored using python or c programming.
 
 In '**diag**' folder, you may find some postprocessing codes, those convert hdf5 output to txt file. 
 
-The converted txt is already arranged to plot in 'gnuplot' which is well-known free software and available for windows and linux system.
+The converted txt file will write and arrange data to be able to plot in 'gnuplot' program which is well-known free software and available for windows and linux system.
 
-A postprocessing program written in python will be preparing in the future.
-
-To use diag programs, you have to compile codes. In '**diag**' directory, you may find '**compile**'. After specifying library pathes, simply type
+To use diag programs, you have to compile codes. In **diag** directory, you may find **compile** file. After specifying library pathes in **compile**, simply type
 
 **sh compile** or **./compile**
 
-After finishing compilation, you will have list of programs.
+Once finishing compilation, you will have list of programs.
 
 In writing....
+
+
+Other postprocessing program written in python will be preparing in the future.
 
 
 
