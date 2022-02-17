@@ -37,3 +37,26 @@ Type below,
 # 3. Input file
 
 Some examples are prepared in '**input**' folder. Input file can be any txt file. Examples have '.inp' extension, but there is no rule to define file name.
+
+In writing....
+
+# 4. Postprocessing
+
+Output files are written in hdf5 file format. You may convert or explore output file using python or c programming.
+
+In '**diag**' folder, you may find some postprocessing codes, those convert hdf5 output to txt file. 
+
+The converted txt is already arranged to plot in 'gnuplot' which is well-known free software and available for windows and linux system.
+
+A postprocessing program written in python will be preparing in the future.
+
+To use diag programs, you have to compile codes. In '**diag**' directory, you may find '**compile**'. After specifying library pathes, simply type
+
+**sh compile** or **./compile**
+
+After finishing compilation, you will have list of programs.
+
+In writing....
+
+
+
