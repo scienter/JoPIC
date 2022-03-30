@@ -1,5 +1,6 @@
 # JoPIC
 Send E-mail if you need help in using JoPIC.
+
 **mh0309@postech.ac.kr**
 
 # 1. Installation
@@ -13,7 +14,9 @@ Denpending on your computer system, you have to specify '**CFLAGS**' and '**LDFL
 
 If you don't have gsl, fftw, and hdf5 in you computer, please install three libraries.
 
-After defining pathes in '**makefile**', type '**make**'.
+After defining pathes in '**makefile**', 
+
+type '**make**'.
 
 
 # 2. Running codes
@@ -38,8 +41,9 @@ Type below,
 
 # 3. Input file
 
-Some examples are prepared in '**input**' folder. Input file can be any txt file. Examples have '.inp' extension, but there is no rule to define file name.
+Some examples are prepared in '**input**' folder. Input file can be any txt file. Examples have '.inp' extension, but there is no rule to define file name and extension.
 
+You may find 
 In writing....
 
 # 4. Postprocessing
