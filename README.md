@@ -76,19 +76,19 @@ When you type './hdf_field', it will show message as below.
 
 There are 4 modes, but mode 0 will be enough for obtaining basic data.
 
-**[stX]** **[stY]** : defining stripe step. 
+* **[stX]** **[stY]** : defining stripe step. 
 If **[stX]**=1, **[stY]**=1, all field grids are included. 
 If **[stX]**=1, **[stY]**=2, y grid number will be half of origin data. 
 
-**[fieldType]** : file name except of time step. 
+* **[fieldType]** : file name except of time step. 
 If field file has name of **fieldSplit4000.h5**, **[fieldType]** is **fieldSplit**.
 In case of density file like **0density5000.h5**, **[fieldType]** is **0density**.
 
-**[angle]** : azimuthal angle in degree. ex) 0 or 90
+* **[angle]** : azimuthal angle in degree. ex) 0 or 90
 
-**[minY] [maxY]** : plot range in transverse
+* **[minY] [maxY]** : plot range in transverse
 
-**[shift]** : just type '0'.
+* **[shift]** : just type '0'.
 
 For example if you have field data from 2000 to 10000 with step 2000,
 
