@@ -60,11 +60,11 @@ To use diag programs, you have to compile codes. In **diag** directory, you may 
 
 Once finishing compilation, you will have list of programs.
 
-Postprocessing field data.
+*Postprocessing field data.
 
-When you type './hdf_field', it will show message as below.
+  When you type './hdf_field', it will show message as below.
 
-**./hdf_field [mode] [initial] [final] [timestep] [stX] [stY]
+  **./hdf_field [mode] [initial] [final] [timestep] [stX] [stY]
 
 mode(0): [fileType] [angle] [minY] [maxY] [shift]
 
