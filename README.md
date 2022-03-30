@@ -66,13 +66,13 @@ When you type './hdf_field', it will show message as below.
 
 **./hdf_field [mode] [initial] [final] [timestep] [stX] [stY]**
 
-**mode(0): [fileType] [angle] [minY] [maxY] [shift]
+**mode(0): [fileType] [angle] [minY] [maxY] [shift]**
 
-**mode(1): [fileType] [angleDivision] [cellNum]
+**mode(1): [fileType] [angleDivision] [cellNum]**
 
-**mode(2): [minY] [maxY] [angle] [numS] [species1] [species2] ...
+**mode(2): [minY] [maxY] [angle] [numS] [species1] [species2] ...**
 
-**mode(3 : summing): [minY] [maxY] [angle] [numS] [species1] [species2] ...
+**mode(3 : summing): [minY] [maxY] [angle] [numS] [species1] [species2] ...**
 
 There are 4 modes, but mode 0 will be enough for obtaining basic data.
 
