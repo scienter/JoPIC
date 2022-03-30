@@ -64,7 +64,7 @@ Once finishing compilation, you will have list of programs.
 
 When you type './hdf_field', it will show message as below.
 
-**./hdf_field [mode] [initial] [final] [timestep] [stX] [stY]
+**./hdf_field [mode] [initial] [final] [timestep] [stX] [stY]**
 
 **mode(0): [fileType] [angle] [minY] [maxY] [shift]
 
