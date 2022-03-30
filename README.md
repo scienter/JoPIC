@@ -60,7 +60,7 @@ To use diag programs, you have to compile codes. In **diag** directory, you may 
 
 Once finishing compilation, you will have list of programs.
 
-# *Postprocessing field data.*
+# *Postprocessing Cylindrical field data.*
 
 When you type './hdf_field', it will show message as below.
 
@@ -90,9 +90,11 @@ In case of density file like **0density5000.h5**, **[fieldType]** is **0density*
 
 **[shift]** : just type '0'.
 
+For example if you have field data from 2000 to 10000 with step 2000,
+
+** /home/scienter/jopic/diag/hdf_field 0 2000 10000 2000 1 1 fieldSplit 0 -60e-6 60e-6 0**
 In writing....
 
-In writing....
 
 
 Other postprocessing program written in python will be preparing in the future.
