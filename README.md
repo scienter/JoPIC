@@ -92,7 +92,7 @@ In case of density file like **0density5000.h5**, **[fieldType]** is **0density*
 
 For example if you have field data from 2000 to 10000 with step 2000,
 
-** /home/scienter/jopic/diag/hdf_field 0 2000 10000 2000 1 1 fieldSplit 0 -60e-6 60e-6 0**
+**/home/scienter/jopic/diag/hdf_field 0 2000 10000 2000 1 1 fieldSplit 0 -60e-6 60e-6 0**
 In writing....
 
 
