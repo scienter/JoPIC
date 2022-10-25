@@ -6,6 +6,7 @@
 #include "mpi.h"
 #include "hdf5.h"
 #include "hdf5_hl.h"
+#include <unistd.h>
 
 void saveFieldComp(double ***data,char *fileName,char *dataName,int nx,int ny,int nz,int nxSub,int nySub,int nzSub,int istart,int iend,int jstart,int jend,int kstart,int kend,int *offSet);
 void saveIntMeta(char *fileName,char *dataName,int *data,int dataCnt);
@@ -43,6 +44,7 @@ void saveEFieldHDF(Domain *D,int iteration)
       saveIntMeta(name,"/nz",&nz,1);
     } else      ;
     MPI_Barrier(MPI_COMM_WORLD);
+	 	 
 
     offset[0]=D->minXSub-D->minXDomain;
     offset[1]=D->minYSub-D->minYDomain;
@@ -51,9 +53,16 @@ void saveEFieldHDF(Domain *D,int iteration)
     switch(D->fieldType) {
     case Split:
       saveFieldComp(D->Ex,name,"/Ex",nx,ny,nz,nxSub,nySub,nzSub,istart,iend,jstart,jend,kstart,kend,offset);
+      MPI_Barrier(MPI_COMM_WORLD);
+//		sleep(1);
       saveFieldComp(D->Pr,name,"/Pr",nx,ny,nz,nxSub,nySub,nzSub,istart,iend,jstart,jend,kstart,kend,offset);
+      MPI_Barrier(MPI_COMM_WORLD);
+//		sleep(1);
       saveFieldComp(D->Pl,name,"/Pl",nx,ny,nz,nxSub,nySub,nzSub,istart,iend,jstart,jend,kstart,kend,offset);
-      saveFieldComp(D->F,name,"/F",nx,ny,nz,nxSub,nySub,nzSub,istart,iend,jstart,jend,kstart,kend,offset);
+      MPI_Barrier(MPI_COMM_WORLD);
+//		sleep(1);
+//      saveFieldComp(D->F,name,"/F",nx,ny,nz,nxSub,nySub,nzSub,istart,iend,jstart,jend,kstart,kend,offset);
+//      MPI_Barrier(MPI_COMM_WORLD);
 
       if(myrank==0)   {
         saveCoordHDF(D,name);
@@ -61,15 +70,19 @@ void saveEFieldHDF(Domain *D,int iteration)
         Efield_xdmf(D->dimension,fileName,nx,ny,nz);
         printf("%s\n",name); 
       }	 else  ;
+      MPI_Barrier(MPI_COMM_WORLD);
 
       break;
 
     case Yee:
     case Pukhov:
       saveFieldComp(D->Ex,name,"/Ex",nx,ny,nz,nxSub,nySub,nzSub,istart,iend,jstart,jend,kstart,kend,offset);
+      MPI_Barrier(MPI_COMM_WORLD);
       saveFieldComp(D->Ey,name,"/Ey",nx,ny,nz,nxSub,nySub,nzSub,istart,iend,jstart,jend,kstart,kend,offset);
+      MPI_Barrier(MPI_COMM_WORLD);
       saveFieldComp(D->Ez,name,"/Ez",nx,ny,nz,nxSub,nySub,nzSub,istart,iend,jstart,jend,kstart,kend,offset);
-      saveFieldComp(D->F,name,"/F",nx,ny,nz,nxSub,nySub,nzSub,istart,iend,jstart,jend,kstart,kend,offset);
+      MPI_Barrier(MPI_COMM_WORLD);
+      //saveFieldComp(D->F,name,"/F",nx,ny,nz,nxSub,nySub,nzSub,istart,iend,jstart,jend,kstart,kend,offset);
 
       if(myrank==0)   {
         saveCoordHDF(D,name);
@@ -120,8 +133,11 @@ void saveBFieldHDF(Domain *D,int iteration)
 
     case Split:
       saveFieldComp(D->Bx,name,"/Bx",nx,ny,nz,nxSub,nySub,nzSub,istart,iend,jstart,jend,kstart,kend,offset);
+      MPI_Barrier(MPI_COMM_WORLD);
       saveFieldComp(D->Sr,name,"/Sr",nx,ny,nz,nxSub,nySub,nzSub,istart,iend,jstart,jend,kstart,kend,offset);
+      MPI_Barrier(MPI_COMM_WORLD);
       saveFieldComp(D->Sl,name,"/Sl",nx,ny,nz,nxSub,nySub,nzSub,istart,iend,jstart,jend,kstart,kend,offset);
+      MPI_Barrier(MPI_COMM_WORLD);
 
       if(myrank==0)   {
         saveCoordHDF(D,name);
@@ -129,13 +145,17 @@ void saveBFieldHDF(Domain *D,int iteration)
         Efield_xdmf(D->dimension,fileName,nx,ny,nz);
         printf("%s\n",name); 
       }	 else  ;
+      MPI_Barrier(MPI_COMM_WORLD);
       break;
 
     case Yee:
     case Pukhov:
       saveFieldComp(D->Bx,name,"/Bx",nx,ny,nz,nxSub,nySub,nzSub,istart,iend,jstart,jend,kstart,kend,offset);
+      MPI_Barrier(MPI_COMM_WORLD);
       saveFieldComp(D->By,name,"/By",nx,ny,nz,nxSub,nySub,nzSub,istart,iend,jstart,jend,kstart,kend,offset);
+      MPI_Barrier(MPI_COMM_WORLD);
       saveFieldComp(D->Bz,name,"/Bz",nx,ny,nz,nxSub,nySub,nzSub,istart,iend,jstart,jend,kstart,kend,offset);
+      MPI_Barrier(MPI_COMM_WORLD);
 
       if(myrank==0)   {
         saveCoordHDF(D,name);

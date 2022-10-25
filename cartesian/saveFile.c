@@ -28,7 +28,11 @@ void saveFile(Domain D,int iteration)
       saveField(&D,iteration);
     else if(D.saveFieldMode==HDF)   {
       saveEFieldHDF(&D,iteration);
-      saveBFieldHDF(&D,iteration);
+//      if(myrank==0) printf("End of E field\n");
+      MPI_Barrier(MPI_COMM_WORLD);
+//      saveBFieldHDF(&D,iteration);
+//      if(myrank==0) printf("End of B field\n");
+//      MPI_Barrier(MPI_COMM_WORLD);
     }  else	;
 
     if(myrank==0)

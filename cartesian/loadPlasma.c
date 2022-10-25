@@ -158,8 +158,8 @@ void loadPolygonPlasma(Domain *D,LoadList *LL,int s,int istart,int iend,int iter
 {
   int nn,i,j,k,jstart,jend,kstart,kend,intNum,cnt,l,m,n;
   int modeX,modeYZ;
-  double posX,posY,posZ,v1,v2,v3,weight,charge,centerX,centerY,centerZ,tmp,weightCoef;
-  double ne,randTest,positionX[2],positionY[2],positionZ[2],gaussCoefX,polyCoefX,gaussCoefYZ,polyCoefYZ;
+  double posX,posY,posZ,v1,v2,v3,weight,charge,centerX,centerY,centerZ,tmp,weightCoef,invNum;
+  double ne,randTest,positionX[3],positionY[3],positionZ[3],gaussCoefX,polyCoefX,gaussCoefYZ,polyCoefYZ;
   Particle ***particle;
   particle=D->particle;
   int myrank;
@@ -188,6 +188,8 @@ void loadPolygonPlasma(Domain *D,LoadList *LL,int s,int istart,int iend,int iter
   coef2D=coef3D=0.0;
   if(D->dimension>1) coef2D=1; else;
   if(D->dimension>2) coef3D=1; else;
+  if(LL->numberInCell==0) invNum=0.0;
+  else                    invNum=1.0/LL->numberInCell;
 
   //position define   
   gsl_qrng *q3 = gsl_qrng_alloc (gsl_qrng_sobol,3);   
@@ -210,7 +212,7 @@ void loadPolygonPlasma(Domain *D,LoadList *LL,int s,int istart,int iend,int iter
                 ne=((LL->xn[l+1]-LL->xn[l])/(LL->xpoint[l+1]-LL->xpoint[l])*(posX-LL->xpoint[l])+LL->xn[l]);
                 ne*=((LL->yn[m+1]-LL->yn[m])/(LL->ypoint[m+1]-LL->ypoint[m])*(posY-LL->ypoint[m])+LL->yn[m]);
                 ne*=((LL->zn[n+1]-LL->zn[n])/(LL->zpoint[n+1]-LL->zpoint[n])*(posZ-LL->zpoint[n])+LL->zn[n]);
-                weight=ne/LL->numberInCell*weightCoef;
+                weight=ne*invNum*weightCoef;
                 cnt=0;
                 while(cnt<intNum/2)
                 {               

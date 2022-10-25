@@ -369,17 +369,17 @@ void removeEdge3D(Domain *D)
             free(p);
             p=particle[i][j][k].head[s]->pt;
           }
- 
-  		    // tracking particle
-        	 s=0;
-            p=D->track[i][j][k].head[s]->pt;
-            while(p!=NULL)  {
-              D->track[i][j][k].head[s]->pt=p->next; 
-              p->next=NULL;
-              free(p);
-              p=D->track[i][j][k].head[s]->pt;
-            }
         }
+
+        // tracking particle
+        s=0;
+          p=D->track[i][j][k].head[s]->pt;
+          while(p!=NULL)  {
+            D->track[i][j][k].head[s]->pt=p->next; 
+            p->next=NULL;
+            free(p);
+            p=D->track[i][j][k].head[s]->pt;
+          }
 		}
 
     //remove plusZ boundary
@@ -400,15 +400,15 @@ void removeEdge3D(Domain *D)
           }
 		  }
  
-  		    // tracking particle
-        	 s=0;
+  		  // tracking particle
+        s=0;
+          p=D->track[i][j][k].head[s]->pt;
+          while(p!=NULL)  {
+            D->track[i][j][k].head[s]->pt=p->next; 
+            p->next=NULL;
+            free(p);
             p=D->track[i][j][k].head[s]->pt;
-            while(p!=NULL)  {
-              D->track[i][j][k].head[s]->pt=p->next; 
-              p->next=NULL;
-              free(p);
-              p=D->track[i][j][k].head[s]->pt;
-            }
+          }
       }
 
     //remove minusZ boundary

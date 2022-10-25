@@ -50,7 +50,7 @@ void solveF_Split(Domain *D,double ***Pr,double ***Pl,double ***Sr,double ***Sl,
 	LL=D->loadList;      
   	s=0;
   	while(LL->next)  {
-  	  	solveCharge(D,LL,D->RhoNoPair,s,istart,iend,1.0,half,non_half);    
+  	   solveCharge(D,LL,D->RhoNoPair,s,istart,iend,1.0,half,non_half);
   	  	LL=LL->next;
   	  	s++;
   	}

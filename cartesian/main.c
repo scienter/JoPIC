@@ -35,7 +35,7 @@ int main(int argc, char *argv[])
 
   	if(argc < 2) 
   	{  
-  	  	printf("mpirun -np N jopic [inputFile] [dumpNum]\n"); 
+  	  	printf("mpirun -np N show [inputFile] [dumpNum]\n"); 
   	  	exit(0); 
   	}
 
@@ -111,11 +111,13 @@ int main(int argc, char *argv[])
   	  	L=L->next;
   	}
 
+
   	//rooping time 
   	while(iteration<=D.maxStep)
   	{
 
  		solveF(&D,D.Pr,D.Pl,D.Sr,D.Sl,D.EzNow,D.BzNow,half=0,non_half=1);
+      //if(myrank==0) printf("iteration=%d, solveF is done.\n",iteration);
 		 		  
 		//     //calculating running time     
 		//       end=clock();
@@ -150,6 +152,7 @@ int main(int argc, char *argv[])
 			if(myrank==0) printf("At step%d, beam loading is done.\n",iteration); else ;
 		} else ;
 		MPI_Barrier(MPI_COMM_WORLD);
+      //if(myrank==0) printf("iteration=%d, beam loading is done.\n",iteration);
 
 
    	//resolChange
@@ -195,17 +198,20 @@ int main(int argc, char *argv[])
       	saveCenterField(&D,iteration);
 			//         saveCenterDensity(&D,iteration);
     	}  else	;
+      //if(myrank==0) printf("iteration=%d, save Center is done.\n",iteration);
 
     	if(D.consCheck==ON) checkEnergyCons(&D,iteration); else ;
+      //if(myrank==0) printf("iteration=%d, check energy conservation.\n",iteration);
 
     	// tracking
 		particleTracking(&D,iteration);
     	MPI_Barrier(MPI_COMM_WORLD);
     	if(D.tracking==ON && (iteration+1)%100==0) saveTrack(&D,iteration); else ;
+      //if(myrank==0) printf("iteration=%d, particle tracking is done.\n",iteration);
 
 
     	interpolation(D,&Ext);
-		//if(myrank==0 && iteration>=500) printf("iteration=%d, interpolation\n",iteration);
+		//if(myrank==0) printf("iteration=%d, interpolation\n",iteration);
 
     	// Plasma lens
     	PL=D.lensList;
@@ -213,6 +219,7 @@ int main(int argc, char *argv[])
       	plasmaLens(&D,PL,iteration);
       	PL=PL->next;
     	}
+		//if(myrank==0) printf("iteration=%d, plasma lens is done\n",iteration);
 
     	particlePush(&D,iteration);
 		//if(myrank==0) printf("iteration=%d, push\n",iteration);
@@ -306,6 +313,7 @@ int main(int argc, char *argv[])
     	iteration+=1;
     	t=D.dt*iteration;  
   	}     //end of time roop                  
+
 
 	end=clock();
   	time_spent=(end-begin)/CLOCKS_PER_SEC;

@@ -1032,12 +1032,12 @@ void ExBx_solve2D_Split(Domain *D,int iteration)
       }	
     }
 
-    if(myrank%D->M==0 && D->Period==OFF) {
-      for(i=istart; i<iend; i++) {
-        D->Ex[i][jstart][k]=0.0;
-        D->ExNow[i][jstart][k]=0.0;
-      }
-    } else ;
+     if(myrank%D->M==0 && D->Period==OFF) {
+       for(i=istart; i<iend; i++) {
+         D->Ex[i][jstart][k]=0.0;
+         D->ExNow[i][jstart][k]=0.0;
+       }
+     } else ;
 }
 
 void PS_solve2D_Split(Domain *D,int iteration)

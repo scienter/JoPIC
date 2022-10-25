@@ -367,18 +367,31 @@ void saveDumpFieldHDF(Domain *D,int iteration)
       offset[2]=0;
       
       saveFieldComp(D->Ex,name,"/Ex",nx,ny,1,nxSub,nySub,1,istart,iend,jstart,jend,0,1,offset);
+      MPI_Barrier(MPI_COMM_WORLD);
       saveFieldComp(D->Bx,name,"/Bx",nx,ny,1,nxSub,nySub,1,istart,iend,jstart,jend,0,1,offset);
+      MPI_Barrier(MPI_COMM_WORLD);
       saveFieldComp(D->ExNow,name,"/ExNow",nx,ny,1,nxSub,nySub,1,istart,iend,jstart,jend,0,1,offset);
+      MPI_Barrier(MPI_COMM_WORLD);
       saveFieldComp(D->BxNow,name,"/BxNow",nx,ny,1,nxSub,nySub,1,istart,iend,jstart,jend,0,1,offset);
+      MPI_Barrier(MPI_COMM_WORLD);
       saveFieldComp(D->Pr,name,"/Pr",nx,ny,1,nxSub,nySub,1,istart,iend,jstart,jend,0,1,offset);
+      MPI_Barrier(MPI_COMM_WORLD);
       saveFieldComp(D->Pl,name,"/Pl",nx,ny,1,nxSub,nySub,1,istart,iend,jstart,jend,0,1,offset);
+      MPI_Barrier(MPI_COMM_WORLD);
       saveFieldComp(D->Sr,name,"/Sr",nx,ny,1,nxSub,nySub,1,istart,iend,jstart,jend,0,1,offset);
+      MPI_Barrier(MPI_COMM_WORLD);
       saveFieldComp(D->Sl,name,"/Sl",nx,ny,1,nxSub,nySub,1,istart,iend,jstart,jend,0,1,offset);
+      MPI_Barrier(MPI_COMM_WORLD);
       saveFieldComp(D->Jx,name,"/Jx",nx,ny,1,nxSub,nySub,1,istart,iend,jstart,jend,0,1,offset);
+      MPI_Barrier(MPI_COMM_WORLD);
       saveFieldComp(D->Jy,name,"/Jy",nx,ny,1,nxSub,nySub,1,istart,iend,jstart,jend,0,1,offset);
+      MPI_Barrier(MPI_COMM_WORLD);
       saveFieldComp(D->Jz,name,"/Jz",nx,ny,1,nxSub,nySub,1,istart,iend,jstart,jend,0,1,offset);
+      MPI_Barrier(MPI_COMM_WORLD);
       saveFieldComp(D->F,name,"/F",nx,ny,1,nxSub,nySub,1,istart,iend,jstart,jend,0,1,offset);
+      MPI_Barrier(MPI_COMM_WORLD);
       saveFieldComp(D->RhoPair,name,"/RhoPair",nx,ny,1,nxSub,nySub,1,istart,iend,jstart,jend,0,1,offset);
+      MPI_Barrier(MPI_COMM_WORLD);
       break;
 
     //3D
@@ -396,15 +409,25 @@ void saveDumpFieldHDF(Domain *D,int iteration)
       offset[2]=(D->minZSub-D->minZDomain)+biasZ;
       
       saveFieldComp(D->Ex,name,"/Ex",nx,ny,nz,nxSub,nySub,nzSub,istart,iend,jstart,jend,kstart,kend,offset);
+      MPI_Barrier(MPI_COMM_WORLD);
       saveFieldComp(D->Ey,name,"/Ey",nx,ny,nz,nxSub,nySub,nzSub,istart,iend,jstart,jend,kstart,kend,offset);
+      MPI_Barrier(MPI_COMM_WORLD);
       saveFieldComp(D->Ez,name,"/Ez",nx,ny,nz,nxSub,nySub,nzSub,istart,iend,jstart,jend,kstart,kend,offset);
+      MPI_Barrier(MPI_COMM_WORLD);
       saveFieldComp(D->Bx,name,"/Bx",nx,ny,nz,nxSub,nySub,nzSub,istart,iend,jstart,jend,kstart,kend,offset);
+      MPI_Barrier(MPI_COMM_WORLD);
       saveFieldComp(D->By,name,"/By",nx,ny,nz,nxSub,nySub,nzSub,istart,iend,jstart,jend,kstart,kend,offset);
+      MPI_Barrier(MPI_COMM_WORLD);
       saveFieldComp(D->Bz,name,"/Bz",nx,ny,nz,nxSub,nySub,nzSub,istart,iend,jstart,jend,kstart,kend,offset);
+      MPI_Barrier(MPI_COMM_WORLD);
       saveFieldComp(D->Jx,name,"/Jx",nx,ny,nz,nxSub,nySub,nzSub,istart,iend,jstart,jend,kstart,kend,offset);
+      MPI_Barrier(MPI_COMM_WORLD);
       saveFieldComp(D->Jy,name,"/Jy",nx,ny,nz,nxSub,nySub,nzSub,istart,iend,jstart,jend,kstart,kend,offset);
+      MPI_Barrier(MPI_COMM_WORLD);
       saveFieldComp(D->Jz,name,"/Jz",nx,ny,nz,nxSub,nySub,nzSub,istart,iend,jstart,jend,kstart,kend,offset);
+      MPI_Barrier(MPI_COMM_WORLD);
       saveFieldComp(D->RhoPair,name,"/RhoPair",nx,ny,nz,nxSub,nySub,nzSub,istart,iend,jstart,jend,kstart,kend,offset);
+      MPI_Barrier(MPI_COMM_WORLD);
       break;
     case (Split-1)*3+3:
       nx=D->nx+5;
@@ -419,19 +442,31 @@ void saveDumpFieldHDF(Domain *D,int iteration)
       offset[2]=(D->minZSub-D->minZDomain)+biasZ;
       
       saveFieldComp(D->Ex,name,"/Ex",nx,ny,nz,nxSub,nySub,nzSub,istart,iend,jstart,jend,kstart,kend,offset);
+      MPI_Barrier(MPI_COMM_WORLD);
       saveFieldComp(D->Bx,name,"/Bx",nx,ny,nz,nxSub,nySub,nzSub,istart,iend,jstart,jend,kstart,kend,offset);
+      MPI_Barrier(MPI_COMM_WORLD);
       saveFieldComp(D->ExNow,name,"/ExNow",nx,ny,nz,nxSub,nySub,nzSub,istart,iend,jstart,jend,kstart,kend,offset);
+      MPI_Barrier(MPI_COMM_WORLD);
       saveFieldComp(D->BxNow,name,"/BxNow",nx,ny,nz,nxSub,nySub,nzSub,istart,iend,jstart,jend,kstart,kend,offset);
+      MPI_Barrier(MPI_COMM_WORLD);
       saveFieldComp(D->Pr,name,"/Pr",nx,ny,nz,nxSub,nySub,nzSub,istart,iend,jstart,jend,kstart,kend,offset);
+      MPI_Barrier(MPI_COMM_WORLD);
       saveFieldComp(D->Pl,name,"/Pl",nx,ny,nz,nxSub,nySub,nzSub,istart,iend,jstart,jend,kstart,kend,offset);
+      MPI_Barrier(MPI_COMM_WORLD);
       saveFieldComp(D->Sr,name,"/Sr",nx,ny,nz,nxSub,nySub,nzSub,istart,iend,jstart,jend,kstart,kend,offset);
+      MPI_Barrier(MPI_COMM_WORLD);
       saveFieldComp(D->Sl,name,"/Sl",nx,ny,nz,nxSub,nySub,nzSub,istart,iend,jstart,jend,kstart,kend,offset);
+      MPI_Barrier(MPI_COMM_WORLD);
       saveFieldComp(D->Jx,name,"/Jx",nx,ny,nz,nxSub,nySub,nzSub,istart,iend,jstart,jend,kstart,kend,offset);
+      MPI_Barrier(MPI_COMM_WORLD);
       saveFieldComp(D->Jy,name,"/Jy",nx,ny,nz,nxSub,nySub,nzSub,istart,iend,jstart,jend,kstart,kend,offset);
+      MPI_Barrier(MPI_COMM_WORLD);
       saveFieldComp(D->Jz,name,"/Jz",nx,ny,nz,nxSub,nySub,nzSub,istart,iend,jstart,jend,kstart,kend,offset);
-      saveFieldComp(D->Jy,name,"/Jy",nx,ny,nz,nxSub,nySub,nzSub,istart,iend,jstart,jend,kstart,kend,offset);
+      MPI_Barrier(MPI_COMM_WORLD);
       saveFieldComp(D->F,name,"/F",nx,ny,nz,nxSub,nySub,nzSub,istart,iend,jstart,jend,kstart,kend,offset);
+      MPI_Barrier(MPI_COMM_WORLD);
       saveFieldComp(D->RhoPair,name,"/RhoPair",nx,ny,nz,nxSub,nySub,nzSub,istart,iend,jstart,jend,kstart,kend,offset);
+      MPI_Barrier(MPI_COMM_WORLD);
       break;
     }	//End of switch (dimension)
 }
@@ -1076,19 +1111,21 @@ void saveFieldComp(double ***data,char *fileName,char *dataName,int nx,int ny,in
           for(k=kstart; k<kend; k++)
             field[start+k-kstart]=data[i][j][k];
           start+=nzSub;     
-        }  
+        } 
 
     plist_id=H5Pcreate(H5P_DATASET_XFER);
-    H5Pset_dxpl_mpio(plist_id,H5FD_MPIO_COLLECTIVE);
+//    H5Pset_dxpl_mpio(plist_id,H5FD_MPIO_COLLECTIVE);
+    H5Pset_dxpl_mpio(plist_id,H5FD_MPIO_INDEPENDENT);
     status = H5Dwrite(dset_id, H5T_NATIVE_DOUBLE,memspace,subfilespace,plist_id,field);
+	 
     H5Pclose(plist_id);
     H5Sclose(subfilespace);
     H5Dclose(dset_id);
-
     H5Sclose(memspace);
     H5Sclose(filespace);
     H5Fclose(file_id);
     free(field);
+	 
 }
 
 void MPI_saveIntArray(int *data,char *fileName,char *dataName,int offSet)
