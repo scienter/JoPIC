@@ -1,5 +1,5 @@
 # JoPIC
-Send E-mail if you need help in using JoPIC.
+Send E-mail if you need helps in using JoPIC.
 
 **mh0309@postech.ac.kr**
 
