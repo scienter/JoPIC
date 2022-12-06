@@ -187,10 +187,10 @@ void updateCurrent2D_Split_1st(Domain *D,int nSpecies,int iteration)
 {
 	int i,j,k,n,s,ii,jj,i1,i2,j1,j2,k1,k2,gridI,gridJ,dataI[2],dataJ[2];
 	int istart,iend,jstart,jend,kstart,kend;
-	int nxSub,nySub,nzSub;
+	int nxSub,nySub,nzSub,cnt;
 	double x1,x2,y1,y2,xr,yr,zr,z1,z2,dxBydt,dyBydt,dtOverdx,dtOverdy;
 	double Fx,Wx[2],Fy,Wy[2],dataX[3],dataY[3];
-	double vz,xc,yc,wTimesQ,posX1,posX2,posY1,posY2,invGam;
+	double vz,xc,yc,wTimesQ,posX1,posX2,posY1,posY2,invGam,tmp;
     
 	ptclList *p;
 	LoadList *LL;   
@@ -233,6 +233,8 @@ void updateCurrent2D_Split_1st(Domain *D,int nSpecies,int iteration)
           }
   	} else ;
 
+
+
   	for(i=istart; i<iend; i++)
     	for(j=jstart; j<jend; j++)
       	for(s=0; s<nSpecies; s++)
@@ -270,12 +272,15 @@ void updateCurrent2D_Split_1st(Domain *D,int nSpecies,int iteration)
             		Fy=(posY2-posY1)*dyBydt;
             		Wx[1]=xc-gridI;   Wx[0]=1-Wx[1];
             		Wy[1]=yc-gridJ;   Wy[0]=1-Wy[1];
-            		for(ii=0; ii<2; ii++) 
+
+						for(ii=0; ii<2; ii++) {                    
             			D->Jy[gridI+ii][gridJ][k]+=Fy*Wx[ii]*coeff[s]*wTimesQ;
+						}
 
             		for(ii=0; ii<2; ii++)
-            			for(jj=0; jj<2; jj++) 
+            			for(jj=0; jj<2; jj++) { 
             		   	D->Jz[gridI+ii][gridJ+jj][k]+=Wx[ii]*Wy[jj]*vz*coeff[s]*wTimesQ;
+                     }
 
          		}
 
@@ -310,9 +315,9 @@ void updateCurrent2D_Split_1st(Domain *D,int nSpecies,int iteration)
           		   	D->Jx[gridI][gridJ+jj][k]+=Fx*Wy[jj]*coeff[s]*wTimesQ;
           		}
 
-          	p=p->next;
-        	}    //End of while(p)
-      }  	 //End of for(s)     
+               p=p->next;
+        	   }    //End of while(p)
+         }  	 //End of for(s)     
 
 }
 

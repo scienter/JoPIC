@@ -701,15 +701,17 @@ int findLoadParameters(int rank, LoadList *LL,Domain *D,char *input)
       }
       if(FindParameters("Plasma",rank,"Ynodes",input,str)) LL->ynodes=atoi(str);
       else  LL->ynodes=2;
+      if(FindParameters("Plasma",rank,"Znodes",input,str)) LL->znodes=atoi(str);
+      else  LL->znodes=2;      
+      if(D->dimension==1)   { LL->ynodes=2; LL->znodes=2; }
+      if(D->dimension==2)   { LL->znodes=2; }
       LL->ypoint = (double *)malloc(LL->ynodes*sizeof(double));
       LL->yn = (double *)malloc(LL->ynodes*sizeof(double)); 
-      LL->ypoint[0]=-1e6; LL->ypoint[1]=1e6; 
+      LL->ypoint[0]=0; LL->ypoint[1]=1; 
       LL->yn[0]=1; LL->yn[1]=1;
-      if(FindParameters("Plasma",rank,"Znodes",input,str)) LL->znodes=atoi(str);
-      else  LL->znodes=2;
       LL->zpoint = (double *)malloc(LL->znodes*sizeof(double));
       LL->zn = (double *)malloc(LL->znodes*sizeof(double));  
-      LL->zpoint[0]=-1e6; LL->zpoint[1]=1e6; 
+      LL->zpoint[0]=0; LL->zpoint[1]=1; 
       LL->zn[0]=1; LL->zn[1]=1;
       
       if(D->dimension>1)  {

@@ -337,8 +337,9 @@ void loadLaser_Gaussian_2D_Yee_Pukhov(Domain *D,LaserList *L,double t)
 void loadLaser_Gaussian_2D_Split(Domain *D,LaserList *L,double t)
 {
    double rU,rD,longitudinal,t0,flat;
-   double zR,w0,w,phi,omega,kx,pphi,amp;
+   double zR,w0,w,phi,omega,kx,pphi;
    double x,y,z,r2,w2,retard;
+	double complex amp;
    int istart,iend,jstart,jend,kstart,kend,minj,maxj;
    int positionX,rank,j,k,jC,kC,laserOK=0;    
    int myrank, nTasks;
@@ -393,22 +394,20 @@ void loadLaser_Gaussian_2D_Split(Domain *D,LaserList *L,double t)
          for(j=0; j<jend+3; j++)         {
            y=(j-jstart+D->minYSub-jC)*D->dy;   r2=y*y;
            pphi=x/zR*r2/w2-0.5*phi+kx*x-omega*t;
-           amp=longitudinal*sqrt(w0/w)*exp(-r2/w2)*sin(pphi);
-           D->Pr[positionX][j][k]=amp;            
+           amp=sqrt(w0/w)*exp(-r2/w2)*cexp(I*pphi);
+           D->Pr[positionX][j][k]=longitudinal*creal(amp);            
 //           pphi=-x/zR*r2/w2+0.5*phi-kx*x-omega*t;
 //           amp=longitudinal*sqrt(w0/w)*exp(-r2/w2)*sin(pphi);
-           D->Pl[positionX][j][k]=amp;           
+           D->Pl[positionX][j][k]=longitudinal*creal(amp);            
          }
        } 
        else if(L->polarity==3)       {
          for(j=jstart; j<jend; j++)         {
            y=(j-jstart+D->minYSub-jC)*D->dy;   r2=y*y;
            pphi=x/zR*r2/w2-0.5*phi+kx*x-omega*t;
-           amp=longitudinal*sqrt(w0/w)*exp(-r2/w2)*sin(pphi);
-           D->Sr[positionX][j][k]=amp;            
-//           pphi=-x/zR*r2/w2+0.5*phi-kx*x-omega*t;
-//           amp=longitudinal*sqrt(w0/w)*exp(-r2/w2)*sin(pphi);
-           D->Sl[positionX][j][k]=amp;           
+           amp=sqrt(w0/w)*exp(-r2/w2)*sin(pphi);
+           D->Sr[positionX][j][k]=longitudinal*creal(amp);            
+           D->Sl[positionX][j][k]=longitudinal*creal(amp);            
          }
        }
        break;
@@ -418,18 +417,18 @@ void loadLaser_Gaussian_2D_Split(Domain *D,LaserList *L,double t)
          for(j=jstart; j<jend; j++)    {
            y=(j-jstart+D->minYSub-jC)*D->dy;    r2=y*y;
            pphi=x/zR*r2/w2-0.5*phi+kx*x-omega*t;
-           amp=longitudinal*sqrt(w0/w)*exp(-r2/w2)*sin(pphi);
-           D->Pr[positionX][j][k]+=amp;            
-           D->Pl[positionX][j][k]+=amp;           
+           amp=sqrt(w0/w)*exp(-r2/w2)*cexp(I*pphi);
+           D->Pr[positionX][j][k]+=longitudinal*creal(amp);            
+           D->Pl[positionX][j][k]+=longitudinal*creal(amp);            
          }
        }
        else if(L->polarity==3)       {
          for(j=jstart; j<jend; j++)    {
            y=(j-jstart+D->minYSub-jC)*D->dy;   r2=y*y;
            pphi=x/zR*r2/w2-0.5*phi+kx*x-omega*t;
-           amp=longitudinal*sqrt(w0/w)*exp(-r2/w2)*sin(pphi);
-           D->Sr[positionX][j][k]+=amp;            
-           D->Sl[positionX][j][k]+=amp;           
+           amp=sqrt(w0/w)*exp(-r2/w2)*sin(pphi);
+           D->Sr[positionX][j][k]+=longitudinal*creal(amp);            
+           D->Sl[positionX][j][k]+=longitudinal*creal(amp);            
          }
        }
        break;
@@ -867,10 +866,10 @@ void loadLaser_Gaussian_3D_Split(Domain *D,LaserList *L,double t)
 
 void loadLaser_SSTF_3D_Yee_Pukhov(Domain *D,LaserList *L,double t)
 {
-   double t0,omega,ampY,ampZ,gaussAmp,dy,dz,y,z,alphaY,alphaZ,minY,minZ,f12Y,f12Z,tcoefY,tcoefZ,zR,w0y,w0z,wy,wz;
+   double t0,omega,dy,dz,y,z,alphaY,alphaZ,minY,minZ,f12Y,f12Z,tcoefY,tcoefZ,zR,w0y,w0z,wy,wz;
    double sigW,minT,minTY,minTZ,sigYSSTF,sigZSSTF,f0,f,x,k0,a0,lambda0,phase,phi,pphiY,pphiZ,gaussX;
-   double complex a_k0Y,coefY,arg1Y,sstfCompAY,sstfCompAZ,sstfCompA,mY,nY,tmpY,gaussTmpY;
-   double complex a_k0Z,coefZ,arg1Z,mZ,nZ,tmpZ,gaussTmpZ;
+   double complex a_k0Y,coefY,arg1Y,sstfCompAY,mY,nY,tmpY,gaussTmpY,ampY,sstfCompA;
+   double complex a_k0Z,coefZ,arg1Z,sstfCompAZ,mZ,nZ,tmpZ,gaussTmpZ,ampZ,gaussAmp;
 	double ***field;
    int istart,iend,jstart,jend,kstart,kend,minYSub,minZSub;
    int positionX,rank,i,j,k,jC,kC,laserOK=OFF;    
@@ -898,8 +897,8 @@ void loadLaser_SSTF_3D_Yee_Pukhov(Domain *D,LaserList *L,double t)
    sigZSSTF=L->sigZSSTF;  
    alphaZ=L->alphaZSSTF;
 
-   minTY=-4.0/sigW*sqrt((1.0+alphaY*alphaY*sigW*sigW/sigYSSTF/sigYSSTF))-L->retard*D->dt*D->divisionLambda*2.0*M_PI/D->omega;
-   minTZ=-4.0/sigW*sqrt((1.0+alphaZ*alphaZ*sigW*sigW/sigZSSTF/sigYSSTF))-L->retard*D->dt*D->divisionLambda*2.0*M_PI/D->omega;
+   minTY=-4.0/sigW*sqrt(1.0+alphaY*alphaY*sigW*sigW/sigYSSTF/sigYSSTF)-L->retard*D->dt*D->divisionLambda*2.0*M_PI/D->omega;
+   minTZ=-4.0/sigW*sqrt(1.0+alphaZ*alphaZ*sigW*sigW/sigZSSTF/sigZSSTF)-L->retard*D->dt*D->divisionLambda*2.0*M_PI/D->omega;
 	if(minTY>=minTZ) minT=minTY;
 	else minT=minTZ;
 	if(alphaY==0.0 && alphaZ!=0.0) { tcoefY=1.0; tcoefZ=0.0; }
@@ -933,8 +932,8 @@ void loadLaser_SSTF_3D_Yee_Pukhov(Domain *D,LaserList *L,double t)
    tmpZ=M_PI/mZ/a_k0Z/(1-I*k0*sigZSSTF*sigZSSTF*0.5/f0);
    tmpY=csqrt(tmpY)*sigYSSTF*sigW*0.5;
    tmpZ=csqrt(tmpZ)*sigZSSTF*sigW*0.5;
-   coefY=tmpY/gaussTmpY*a0;			//normalization factor at z=x
-   coefZ=tmpZ/gaussTmpZ*a0;			//normalization factor at z=x
+   coefY=tmpY/gaussTmpY;			//normalization factor at z=x
+   coefZ=tmpZ/gaussTmpZ;			//normalization factor at z=x
 
    // Gaussian property
    w0y=L->sigY_t;
@@ -953,7 +952,7 @@ void loadLaser_SSTF_3D_Yee_Pukhov(Domain *D,LaserList *L,double t)
    if(positionX>=D->minXSub+istart && positionX<D->maxXSub+istart) laserOK=ON; else ;
 
    if(L->polarity==2) { field=D->Ey; }
-   else if(L->polarity==3) { field=D->Ey; }
+   else if(L->polarity==3) { field=D->Ez; }
 	else ;
 //printf("myrank=%d, positionX=%d, laserOK=%d\n",myrank,positionX,laserOK);
 
@@ -971,10 +970,10 @@ void loadLaser_SSTF_3D_Yee_Pukhov(Domain *D,LaserList *L,double t)
 //         compA=coefY*coefZ*sqrt(w0/w)*cexp(arg1Y+arg1Z+I*omega*t0);
          pphiY=x/zR*y*y/wy/wy-0.5*phi;
          pphiZ=x/zR*z*z/wz/wz-0.5*phi;
-         ampY=sqrt(w0y/wy)*exp(-y*y/wy/wy)*cos(pphiY);
-         ampZ=sqrt(w0y/wy)*exp(-z*z/wz/wz)*cos(pphiZ);
-         gaussAmp=ampY*alphaY+ampZ*alphaZ;
-         field[positionX][j][k]=creal(sstfCompA*gaussAmp); 
+         ampY=sqrt(w0y/wy)*exp(-y*y/wy/wy)*cexp(I*pphiY);
+         ampZ=sqrt(w0z/wz)*exp(-z*z/wz/wz)*cexp(I*pphiZ);
+         gaussAmp=ampY*tcoefY+ampZ*tcoefZ;
+         field[positionX][j][k]=a0*creal(sstfCompA*gaussAmp); 
        }
      }
    }
@@ -989,12 +988,13 @@ void loadLaser_SSTF_3D_Yee_Pukhov(Domain *D,LaserList *L,double t)
          sstfCompAY=coefY*cexp(arg1Y+I*omega*t0);
          sstfCompAZ=coefZ*cexp(arg1Z+I*omega*t0);
 			sstfCompA=sstfCompAY*(1.0-tcoefY)+sstfCompAZ*(1.0-tcoefZ);
+
          pphiY=x/zR*y*y/wy/wy-0.5*phi;
          pphiZ=x/zR*z*z/wz/wz-0.5*phi;
-         ampY=sqrt(w0y/wy)*exp(-y*y/wy/wy)*cos(pphiY);
-         ampZ=sqrt(w0y/wy)*exp(-z*z/wz/wz)*cos(pphiZ);
-         gaussAmp=ampY*alphaY+ampZ*alphaZ;
-         field[positionX][j][k]+=creal(sstfCompA*gaussAmp); 
+         ampY=sqrt(w0y/wy)*exp(-y*y/wy/wy)*cexp(I*pphiY);
+         ampZ=sqrt(w0z/wz)*exp(-z*z/wz/wz)*cexp(I*pphiZ);
+         gaussAmp=ampY*tcoefY+ampZ*tcoefZ;
+         field[positionX][j][k]+=a0*creal(sstfCompA*gaussAmp); 
        }
      }
    }
@@ -1003,10 +1003,10 @@ void loadLaser_SSTF_3D_Yee_Pukhov(Domain *D,LaserList *L,double t)
 
 void loadLaser_SSTF_3D_Split(Domain *D,LaserList *L,double t)
 {
-   double t0,omega,ampY,ampZ,gaussAmp,dy,dz,y,z,alphaY,alphaZ,minY,minZ,f12Y,f12Z,tcoefY,tcoefZ,pphiY,pphiZ;
+   double t0,omega,dy,dz,y,z,alphaY,alphaZ,minY,minZ,f12Y,f12Z,tcoefY,tcoefZ,pphiY,pphiZ;
    double sigW,minT,minTY,minTZ,sigYSSTF,sigZSSTF,f0,f,x,k0,a0,lambda0,phase,w0y,w0z,wy,wz,zR,phi,gaussX;
-   double complex a_k0Y,coefY,arg1Y,sstfCompAY,sstfCompAZ,sstfCompA,mY,nY,tmpY,gaussTmpY;
-   double complex a_k0Z,coefZ,arg1Z,mZ,nZ,tmpZ,gaussTmpZ;
+   double complex a_k0Y,coefY,arg1Y,sstfCompAY,mY,nY,tmpY,gaussTmpY,ampY,sstfCompA;
+   double complex a_k0Z,coefZ,arg1Z,sstfCompAZ,mZ,nZ,tmpZ,gaussTmpZ,ampZ,gaussAmp;
 	double ***Right,***Left;
    int istart,iend,jstart,jend,kstart,kend,minYSub,minZSub;
    int positionX,rank,i,j,k,jC,kC,laserOK=OFF;    
@@ -1035,7 +1035,7 @@ void loadLaser_SSTF_3D_Split(Domain *D,LaserList *L,double t)
    alphaZ=L->alphaZSSTF;
 
    minTY=-4.0/sigW*sqrt((1.0+alphaY*alphaY*sigW*sigW/sigYSSTF/sigYSSTF))-L->retard*D->dt*D->divisionLambda*2.0*M_PI/D->omega;
-   minTZ=-4.0/sigW*sqrt((1.0+alphaZ*alphaZ*sigW*sigW/sigZSSTF/sigYSSTF))-L->retard*D->dt*D->divisionLambda*2.0*M_PI/D->omega;
+   minTZ=-4.0/sigW*sqrt((1.0+alphaZ*alphaZ*sigW*sigW/sigZSSTF/sigZSSTF))-L->retard*D->dt*D->divisionLambda*2.0*M_PI/D->omega;
 	if(minTY>=minTZ) minT=minTY;
 	else minT=minTZ;
 	if(alphaY==0.0 && alphaZ!=0.0) { tcoefY=1.0; tcoefZ=0.0; }
@@ -1059,6 +1059,8 @@ void loadLaser_SSTF_3D_Split(Domain *D,LaserList *L,double t)
    gaussTmpY=sigW*sigYSSTF*0.5*csqrt(M_PI/a_k0Y/(1-I*k0*sigYSSTF*sigYSSTF*0.5/f0));
    gaussTmpZ=sigW*sigZSSTF*0.5*csqrt(M_PI/a_k0Z/(1-I*k0*sigZSSTF*sigZSSTF*0.5/f0));
 
+   a_k0Y=f12Y/k0/k0/sigYSSTF/sigYSSTF-I*0.5/k0*(x-f12Y/f0);
+   a_k0Z=f12Z/k0/k0/sigZSSTF/sigZSSTF-I*0.5/k0*(x-f12Z/f0);
    mY=1.0+alphaY*alphaY*sigW*sigW*(x-f0)*(x-f0)/4.0/f0/f0/a_k0Y-I*k0*alphaY*alphaY*sigW*sigW*(x-f0)/2.0/f0/f0;
    mZ=1.0+alphaZ*alphaZ*sigW*sigW*(x-f0)*(x-f0)/4.0/f0/f0/a_k0Z-I*k0*alphaZ*alphaZ*sigW*sigW*(x-f0)/2.0/f0/f0;
    nY=k0*alphaY*sigW/f0+I*alphaY*sigW*(x-f0)/2.0/f0/a_k0Y;
@@ -1067,14 +1069,14 @@ void loadLaser_SSTF_3D_Split(Domain *D,LaserList *L,double t)
    tmpZ=M_PI/mZ/a_k0Z/(1-I*k0*sigZSSTF*sigZSSTF*0.5/f0);
    tmpY=csqrt(tmpY)*sigYSSTF*sigW*0.5;
    tmpZ=csqrt(tmpZ)*sigZSSTF*sigW*0.5;
-   coefY=tmpY/gaussTmpY*a0;			//normalization factor at z=x
-   coefZ=tmpZ/gaussTmpZ*a0;			//normalization factor at z=x
+   coefY=tmpY/gaussTmpY;			//normalization factor at z=x
+   coefZ=tmpZ/gaussTmpZ;			//normalization factor at z=x
 
    // Gaussian property 
    w0y=L->sigY_t;
    w0z=L->sigZ_t;
    zR=M_PI/L->lambda*(w0y*w0y*tcoefY+w0z*w0z*tcoefZ);
-   gaussX=(L->focus-L->loadPointX*D->dx)*L->lambda;
+   gaussX=-(L->loadPointX*D->dx-L->focus)*D->lambda;
    wy=w0y*sqrt(1.0+gaussX*gaussX/zR/zR);
    wz=w0z*sqrt(1.0+gaussX*gaussX/zR/zR);
    phi=atan(gaussX/zR);      
@@ -1103,13 +1105,13 @@ void loadLaser_SSTF_3D_Split(Domain *D,LaserList *L,double t)
          sstfCompAZ=coefZ*cexp(arg1Z+I*omega*t0);
 			sstfCompA=sstfCompAY*(1.0-tcoefY)+sstfCompAZ*(1.0-tcoefZ);
 //         compA=coefY*coefZ*sqrt(w0/w)*cexp(arg1Y+arg1Z+I*omega*t0);
-         pphiY=x/zR*y*y/wy/wy-0.5*phi;
-         pphiZ=x/zR*z*z/wz/wz-0.5*phi;
-         ampY=sqrt(w0y/wy)*exp(-y*y/wy/wy)*cos(pphiY);
-         ampZ=sqrt(w0z/wz)*exp(-z*z/wz/wz)*cos(pphiZ);
+         pphiY=gaussX/zR*y*y/wy/wy-0.5*phi;
+         pphiZ=gaussX/zR*z*z/wz/wz-0.5*phi;
+         ampY=sqrt(w0y/wy)*exp(-y*y/wy/wy)*cexp(I*pphiY);
+         ampZ=sqrt(w0z/wz)*exp(-z*z/wz/wz)*cexp(I*pphiZ);
          gaussAmp=ampY*tcoefY+ampZ*tcoefZ;
-         Right[positionX][j][k]=creal(sstfCompA*gaussAmp); 
-         Left[positionX][j][k]=creal(sstfCompA*gaussAmp); 
+         Right[positionX][j][k]=a0*creal(sstfCompA*gaussAmp); 
+         Left[positionX][j][k]=a0*creal(sstfCompA*gaussAmp); 
        }
      }
    }
@@ -1124,19 +1126,19 @@ void loadLaser_SSTF_3D_Split(Domain *D,LaserList *L,double t)
          sstfCompAY=coefY*cexp(arg1Y+I*omega*t0);
          sstfCompAZ=coefZ*cexp(arg1Z+I*omega*t0);
 			sstfCompA=sstfCompAY*(1.0-tcoefY)+sstfCompAZ*(1.0-tcoefZ);
-         pphiY=x/zR*y*y/wy/wy-0.5*phi;
-         pphiZ=x/zR*z*z/wz/wz-0.5*phi;
-         ampY=sqrt(w0y/wy)*exp(-y*y/wy/wy)*cos(pphiY);
-         ampZ=sqrt(w0z/wz)*exp(-z*z/wz/wz)*cos(pphiZ);
+
+         pphiY=gaussX/zR*y*y/wy/wy-0.5*phi;
+         pphiZ=gaussX/zR*z*z/wz/wz-0.5*phi;
+         ampY=sqrt(w0y/wy)*exp(-y*y/wy/wy)*cexp(I*pphiY);
+         ampZ=sqrt(w0z/wz)*exp(-z*z/wz/wz)*cexp(I*pphiZ);
          gaussAmp=ampY*tcoefY+ampZ*tcoefZ;			
-         Right[positionX][j][k]+=creal(sstfCompA*gaussAmp); 
-         Left[positionX][j][k]+=creal(sstfCompA*gaussAmp); 
+         Right[positionX][j][k]+=a0*creal(sstfCompA*gaussAmp); 
+         Left[positionX][j][k]+=a0*creal(sstfCompA*gaussAmp); 
        }
      }
    }
    else ;   //End of field is OK
 }
-
 
 /*
 void boostLoadLaser2D(Domain *D,LaserList *L)

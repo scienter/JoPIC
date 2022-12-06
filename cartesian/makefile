@@ -1,4 +1,4 @@
-EXEC = jopic
+EXEC = show
 CC = mpicc
 #CC = h5pcc
 #OBJS = main.o parameterSetting.o findparam.o boundary.o clean.o loadPlasma.o restoreDumpHDF.o loadMovingPlasma.o utility.o saveDumpHDF.o saveFile.o saveFieldHDF.o saveParticleHDF.o saveDensityHDF.o fieldShareX.o fieldShareY.o fieldShareZ.o pfieldSolve.o ml.o loadLaser.o interpolation.o particlePush.o ionization.o updateCurrent.o movingDomain.o rearrangeParticles.o particleShareX.o particleShareY.o particleShareZ.o removeEdge.o loadBeam.o shotLaser.o plasmaLens.o track.o updateCurrent_Split.o

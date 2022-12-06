@@ -213,6 +213,7 @@ void loadPolygonPlasma(Domain *D,LoadList *LL,int s,int istart,int iend,int iter
                 ne*=((LL->yn[m+1]-LL->yn[m])/(LL->ypoint[m+1]-LL->ypoint[m])*(posY-LL->ypoint[m])+LL->yn[m]);
                 ne*=((LL->zn[n+1]-LL->zn[n])/(LL->zpoint[n+1]-LL->zpoint[n])*(posZ-LL->zpoint[n])+LL->zn[n]);
                 weight=ne*invNum*weightCoef;
+
                 cnt=0;
                 while(cnt<intNum/2)
                 {               
@@ -247,7 +248,6 @@ void loadPolygonPlasma(Domain *D,LoadList *LL,int s,int istart,int iend,int iter
                     New->index=D->index;            
                     New->core=myrank;            
                   } 
-               //   printf("x1y1+x2y2=%g\n",positionX[0]*positionY[0]+positionX[1]*positionY[1]);
                   cnt++;
                 }		//end of while(cnt)
              } else ;		//End of if (l,m,n)
