@@ -85,9 +85,9 @@ void particleTracking(Domain *D,int iteration)
 				p=D->track[i][j][k].head[0]->pt;
 				while(p) {
 					index=(int)(p->p1Old1);
-					D->trackParticle[index*(MAX*6)+tIdx*6+0]=(p->x+i-istart+minXSub)*unitX;
-					D->trackParticle[index*(MAX*6)+tIdx*6+1]=(p->y+j-jstart+minYSub)*unitY;
-					D->trackParticle[index*(MAX*6)+tIdx*6+2]=(p->z+k-kstart+minZSub)*unitZ;
+					D->trackParticle[index*(MAX*6)+tIdx*6+0]=(0.5*(p->x+i+p->oldX)-istart+minXSub)*unitX;
+					D->trackParticle[index*(MAX*6)+tIdx*6+1]=(0.5*(p->y+j+p->oldY)-jstart+minYSub)*unitY;
+					D->trackParticle[index*(MAX*6)+tIdx*6+2]=(0.5*(p->z+k+p->oldZ)-kstart+minZSub)*unitZ;
 					D->trackParticle[index*(MAX*6)+tIdx*6+3]=p->p1;
 					D->trackParticle[index*(MAX*6)+tIdx*6+4]=p->p2;
 					D->trackParticle[index*(MAX*6)+tIdx*6+5]=p->p3;
@@ -142,7 +142,7 @@ void track(Domain *D,int startI,int endI,int s)
 
 						FLAG=0;
 						if(id==idcore->id) {
-	             			New = (ptclList *)malloc(sizeof(ptclList));
+                     New = (ptclList *)malloc(sizeof(ptclList));
 				        	New->next = D->track[i][j][k].head[0]->pt;
 							D->track[i][j][k].head[0]->pt = New;	
 							
