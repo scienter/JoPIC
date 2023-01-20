@@ -807,7 +807,7 @@ int findLoadParameters(int rank, LoadList *LL,Domain *D,char *input)
         else { printf("In [Plasma], energy_spread=? [<1.0] \n"); fail=1;}
         if(FindParameters("Plasma",rank,"energy_chirp",input,str)) LL->eChirp=atof(str);
         else LL->eChirp=0.0;
-        if(FindParameters("Plasma",rank,"norm_emittance_r",input,str)) LL->emitR=atof(str)*1e-6*1.4285;
+        if(FindParameters("Plasma",rank,"norm_emittance_r",input,str)) LL->emitR=atof(str)*1e-6;
         else { printf("In [Plasma], norm_emittance_r=? [mm mrad] \n"); fail=1;}
         if(FindParameters("Plasma",rank,"beta_r",input,str)) LL->betaR=atof(str);
         else { printf("In [Plasma], beta_r=? [m] \n"); fail=1;}

@@ -68,9 +68,13 @@ void loadBeamPlasma(Domain *D,LoadList *LL,int s,int iteration)
    sigR=sqrt(emitR/gammaR)/D->lambda;
    sigRPrime=sqrt(emitR*gammaR);
 
+   distanceR=LL->alphaR/gammaR/D->lambda+LL->focalL/D->lambda;
+   vz=sqrt(gamma0*gamma0-1.0)/gamma0;	
+   if(vz==0.0)  delT=0.0; 
+   else         delT=distanceR/vz;                  //normalized
+
    if(LL->species==Test) weightCoef=0.0; else weightCoef=1.0;	
 
-   vz=sqrt(gamma0*gamma0-1.0)/gamma0;           //normalized
 	density=LL->density;
 
    srand((iteration+1)*myrank);
@@ -139,13 +143,9 @@ void loadBeamPlasma(Domain *D,LoadList *LL,int s,int iteration)
           if(gamma<=lowGam) lowGam=gamma; else ;
 	       if(gamma>upGam) upGam=gamma; else ;				 
 
-			 pz=sqrt((gamma*gamma-1.0)/(1.0+rPrime*rPrime));
+			 pz=sqrt((gamma*gamma-1.0)/(1.0+2*rPrime*rPrime));
    	    px=xPrime*pz;
           py=yPrime*pz;
-
-    		 distanceR=LL->alphaR/gammaR/D->lambda+(LL->focalL-z)/D->lambda;
-     	    if(vz==0.0)  delT=0.0; 
-     	    else         delT=distanceR/vz;                  //normalized
 
           x-=delT*px/gamma;
 		    y-=delT*py/gamma;
@@ -160,10 +160,10 @@ void loadBeamPlasma(Domain *D,LoadList *LL,int s,int iteration)
 		        positionZ=randomValue(1.0);
               New->z = positionZ;
    	        New->oldZ= i+positionZ-pz/gamma*dt;
-         	  New->x=x;
-              New->y=y;
-              New->oldX=x-px/gamma*dt;
-              New->oldY=y-py/gamma*dt;
+         	  New->x=x/dr;
+              New->y=y/dr;
+              New->oldX=x/dr-px/gamma*dt;
+              New->oldY=y/dr-py/gamma*dt;
 	           New->weight=weight;
    	        New->charge=charge;	
       	     New->Ez=New->Ex=New->Ey=0.0;

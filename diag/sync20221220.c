@@ -30,10 +30,10 @@ struct Particle {
 
 struct Domain_type {
 	int mode,correction,numeric,testMode;
-	int numW,subW,startW,endW;
+	int numW;
 	int maxN;
 	int maxStep,jumpP,jumpT;
-	int scrN,*wList;
+	int scrN;
 	double scrD,scrAngle,dr,screenX0;
 	double minW,dW;
 	double dt;
@@ -59,7 +59,7 @@ fcomplex RCmul(double x, fcomplex a) ;
 static void terminate(const char *message);
 void particlePush(Head head,Domain D);
 void calRadiation(Domain D,double ***intensity,double **spectra1,double **spectra2,double *trackParticle,double weight,int index,int end);
-void saveSpectra(Domain D,double ***intensity);
+void saveSpectra(Domain D,double ***intensity,int pCnt);
 void interpolation(Head head,Domain D,double *E,double *B);
 void restoreIntMeta(char *fileName,char *dataName,int *data,int dataCnt);
 void restoreDoubleMeta(char *fileName,char *dataName,double *data,int dataCnt);
@@ -131,32 +131,24 @@ void main(int argc, char *argv[])
 	D->dr=D->scrD/(1.0*D->scrN);
 	D->dW=(maxPhotonE-minPhotonE)/(1.0*D->numW)/hbar;
 	D->minW=minPhotonE/hbar;
-	D->wList = (int *)malloc((nTasks+1)*sizeof(int ));
-	for(i=0; i<=nTasks; i++) D->wList[i]=0;
-	
 
-	start=0;
-	calSub(D->numW,&D->subW,&D->startW);
-	D->endW=D->startW+D->subW;
-	printf("myrank=%d, startW=%d, endW=%d, subW=%d\n",myrank,D->startW,D->endW,D->subW);
-
-	spectraR = (double **)malloc(D->subW*sizeof(double *));
-	spectraI = (double **)malloc(D->subW*sizeof(double *));
-	intensity = (double ***)malloc(D->subW*sizeof(double **));
-	for(i=0; i<D->subW; i++)  {
+	spectraR = (double **)malloc(D->numW*sizeof(double *));
+	spectraI = (double **)malloc(D->numW*sizeof(double *));
+	intensity = (double ***)malloc(D->numW*sizeof(double **));
+	for(i=0; i<D->numW; i++)  {
 		spectraR[i] = (double *)malloc(3*sizeof(double ));
 		spectraI[i] = (double *)malloc(3*sizeof(double ));
 		intensity[i] = (double **)malloc(D->scrN*sizeof(double *));
 		for(j=0; j<D->scrN; j++)  
 			intensity[i][j] = (double *)malloc(3*sizeof(double ));
 	}	
-	for(i=0; i<D->subW; i++)  
+	for(i=0; i<D->numW; i++)  
 		for(j=0; j<D->scrN; j++)  
 			for(k=0; k<3; k++)  
 				intensity[i][j][k]=0.0;
 
 	 switch (D->mode) {
-	 case 0 :	 
+	 case 0 :
 		energy=atof(argv[12]);
 		D->B0=atof(argv[13]);
 		E0=atof(argv[14]);
@@ -285,74 +277,59 @@ void main(int argc, char *argv[])
 		MPI_Bcast(&D->dt,1,MPI_DOUBLE,0,MPI_COMM_WORLD);
 	
 		start=0;
-		end=pCnt;
+		calSub(pCnt,&cntSub,&start);
+		cntSub=pCnt/nTasks;
+		end=start+cntSub;
+		if(myrank==0) {
+			printf("missing particles are %d in total %d\n",pCnt-cntSub*nTasks,pCnt);
+		} else ;
+
+		printf("start=%d, end=%d, cntSub=%d, dt=%g, maxStep=%d\n",start,end,cntSub,D->dt,D->maxStep);
 
 		trackParticle=(double *)malloc(D->maxStep*6*sizeof(double));
 
-		if(D->mode==1) {		
+		if(D->mode==1) {
 			if(D->testMode==1) end=start+1;
-			else ;
-
-			for(i=start; i<end; i+=D->jumpP) 	{			
+			else 					end=start+1;
+			for(i=start; i<end; i++) 	{
 				sprintf(dataName,"%d",i);
-//				if(myrank==0) { 
-					restoreData(fileName,dataName,trackParticle);
-					restoreAttr(fileName,dataName,"weight",&weight);
-					restoreAttr(fileName,dataName,"id",&id);
-					restoreAttr(fileName,dataName,"core",&core);
-//				} else ;		
-				MPI_Barrier(MPI_COMM_WORLD);
-//				MPI_Bcast(trackParticle,D->maxStep*6,MPI_DOUBLE,0,MPI_COMM_WORLD);
-//				MPI_Bcast(&weight,1,MPI_DOUBLE,0,MPI_COMM_WORLD);
-//				MPI_Bcast(&id,1,MPI_INT,0,MPI_COMM_WORLD);
-//				MPI_Bcast(&core,1,MPI_INT,0,MPI_COMM_WORLD);
+				restoreData(fileName,dataName,trackParticle);
+				restoreAttr(fileName,dataName,"weight",&weight);
+				restoreAttr(fileName,dataName,"id",&id);
+				restoreAttr(fileName,dataName,"core",&core);
 			
-				if(myrank==0) printf("index=%d,id=%g, core=%g, weight*jumpP=%g*%d\n",i,id,core,weight,D->jumpP); else ;
-				calRadiation(D,intensity,spectraR,spectraI,trackParticle,weight*D->jumpP,i,end);
+				if(myrank==0) printf("For rank'0'; index=%d,id=%g, core=%g, weight=%g\n",i,id,core,weight); else ;
+				calRadiation(D,intensity,spectraR,spectraI,trackParticle,weight,i,end);
 
 				endT=clock();
 				time_spent=(endT-beginT)/CLOCKS_PER_SEC/60.0;
 				if(myrank==0) printf("simulation duration for %d/%d is %g minutes.\n",i,end,time_spent); else ;
-
 			} 
-			
 		} else if(D->mode==2) {
 			for(i=start; i<end; i+=D->jumpP) 	{
 				sprintf(dataName,"%d",i);
-//				if(myrank==0) { 
-					restoreAttr(fileName,dataName,"weight",&weight);
-					restoreAttr(fileName,dataName,"id",&id);
-					restoreAttr(fileName,dataName,"core",&core);
-//				} else ;
-				MPI_Barrier(MPI_COMM_WORLD);
-//				MPI_Bcast(&weight,1,MPI_DOUBLE,0,MPI_COMM_WORLD);
-//				MPI_Bcast(&id,1,MPI_INT,0,MPI_COMM_WORLD);
-//				MPI_Bcast(&core,1,MPI_INT,0,MPI_COMM_WORLD);
+				restoreAttr(fileName,dataName,"weight",&weight);
+				restoreAttr(fileName,dataName,"id",&id);
+				restoreAttr(fileName,dataName,"core",&core);
 
 				if(pickId==id && pickCore==core) {
-//					if(myrank==0) 
-						restoreData(fileName,dataName,trackParticle);	
-//					else ;
-					MPI_Barrier(MPI_COMM_WORLD);
-					MPI_Bcast(trackParticle,D->maxStep*6,MPI_DOUBLE,0,MPI_COMM_WORLD);
+					restoreData(fileName,dataName,trackParticle);
 
-					if(myrank==0) {
-						sprintf(name,"particle%g_%g",id,core);
-						out=fopen(name,"w");
-      	         for(step=0; step<D->maxStep; step++) {
-							x=trackParticle[step*6+0];
-							y=trackParticle[step*6+1];
-							z=trackParticle[step*6+2];
-							ux=trackParticle[step*6+3];
-							uy=trackParticle[step*6+4];
-							uz=trackParticle[step*6+5];
-							fprintf(out,"%g %g %g %g %g %g\n",x,y,z,ux,uy,uz);
-						}
-						fclose(out);
-						printf("%s is made.\n",name);
-					} else ;
-					MPI_Barrier(MPI_COMM_WORLD);
+					sprintf(name,"particle%g_%g",id,core);
+					out=fopen(name,"w");
+               for(step=0; step<D->maxStep; step++) {
+						x=trackParticle[step*6+0];
+						y=trackParticle[step*6+1];
+						z=trackParticle[step*6+2];
+						ux=trackParticle[step*6+3];
+						uy=trackParticle[step*6+4];
+						uz=trackParticle[step*6+5];
+						fprintf(out,"%g %g %g %g %g %g\n",x,y,z,ux,uy,uz);
+					}
+					fclose(out);
+					printf("%s is made.\n",name);
 
+//					printf("myrank=%d, index=%d,id=%g, core=%g, weight=%g\n",myrank,i,id,core,weight);
 					calRadiation(D,intensity,spectraR,spectraI,trackParticle,weight*D->jumpP,i,end);
 				}	else ;
 
@@ -362,28 +339,41 @@ void main(int argc, char *argv[])
 		endT=clock();
 		time_spent=(endT-beginT)/CLOCKS_PER_SEC/60.0;
 		if(myrank==0) printf("simulation duration is %g minutes.\n",time_spent); else ;
-		
 		break;
 	}			//End of switch (mode)
 
-	D->wList[myrank]=D->startW;
-   int recvI[nTasks+1];
+   dataNum=D->numW*D->scrN*3;
+   send=(double *)malloc(dataNum*sizeof(double ));
+   recv=(double *)malloc(dataNum*sizeof(double ));
+   start=0;
+   for(i=0; i<D->numW; i++)
+		for(j=0; j<D->scrN; j++)
+			for(k=0; k<3; k++)  {
+				send[start]=intensity[i][j][k];
+				start+=1;
+			}
 	if(myrank!=0)
-		MPI_Send(D->wList,nTasks+1,MPI_INT,0,myrank,MPI_COMM_WORLD);
+		MPI_Send(send,dataNum,MPI_DOUBLE,0,myrank,MPI_COMM_WORLD);
 	else {
 		for(rank=1; rank<nTasks; rank++) {
-			MPI_Recv(recvI,nTasks+1,MPI_INT,rank,rank,MPI_COMM_WORLD,&status);
-			for(i=0; i<=nTasks; i++)
-				D->wList[i]+=recvI[i];
+			MPI_Recv(recv,dataNum,MPI_DOUBLE,rank,rank,MPI_COMM_WORLD,&status);
+			start=0;
+			for(i=0; i<D->numW; i++)
+				for(j=0; j<D->scrN; j++)
+					for(k=0; k<3; k++)  {
+						intensity[i][j][k]+=recv[start];
+						start+=1;
+					}
 		}
 	}
-	D->wList[nTasks]=D->numW;
 	MPI_Barrier(MPI_COMM_WORLD);
-	MPI_Bcast(D->wList,nTasks+1,MPI_INT,0,MPI_COMM_WORLD);
 
-	saveSpectra(D,intensity);
+	if(myrank==0) 	saveSpectra(D,intensity,pCnt);	else ;
 
-	for(i=0; i<D->subW; i++) {
+	free(recv);
+	free(send);
+
+	for(i=0; i<D->numW; i++) {
 		for(j=0; j<D->scrN; j++) 
 			free(intensity[i][j]);
 		free(spectraR[i]);
@@ -393,7 +383,6 @@ void main(int argc, char *argv[])
 	free(spectraR);
 	free(spectraI);
 	free(trackParticle);
-	free(D->wList);
 	free(D);
 
 	endT=clock();
@@ -409,7 +398,7 @@ void main(int argc, char *argv[])
 
 void calRadiation(Domain D,double ***intensity,double **spectraR,double **spectraI,double *trackParticle,double weight,int index,int end)
 {
-	int i,ii,startW,subW,idx,startI,maxStep,nn,jump;
+	int i,ii,numW,idx,startI,maxStep,nn,jump;
 	double coef,R2,invR,minW,dW,w,invGam,gamma,prevGam,nextGam,test;
 	double t,dt,Phi_p,Phi_m,absChi2,sign,sgn,abs;
 	double u0[3],n[3],delR[3],Ireal[3],Iimag[3],SCREEN[3],nextU[3],prevU[3],nextR[3],prevR[3];
@@ -425,8 +414,7 @@ void calRadiation(Domain D,double ***intensity,double **spectraR,double **spectr
 	MPI_Comm_size(MPI_COMM_WORLD, &nTasks);
 	MPI_Comm_rank(MPI_COMM_WORLD, &myrank);
 
-	startW = D->startW;
-	subW = D->subW;
+	numW = D->numW;
 	minW = D->minW;
 	dW = D->dW;
 	dt=D->dt*D->jumpT;
@@ -442,7 +430,7 @@ void calRadiation(Domain D,double ***intensity,double **spectraR,double **spectr
 		SCREEN[1]=idx*D->dr*cos(D->scrAngle*M_PI/180.0);
 		SCREEN[2]=idx*D->dr*sin(D->scrAngle*M_PI/180.0);
 
-		for(ii=0; ii<subW; ii++)  
+		for(ii=0; ii<D->numW; ii++)  
 			for(i=0; i<3; i++)  {
 				spectraR[ii][i]=0.0;
 				spectraI[ii][i]=0.0;
@@ -483,9 +471,9 @@ void calRadiation(Domain D,double ***intensity,double **spectraR,double **spectr
 			R2=0.0;					for(i=0; i<3; i++)	R2+=delR[i]*delR[i];
 			invR=1.0/sqrt(R2);	for(i=0; i<3; i++)	n[i]=delR[i]*invR;
 
-			for(ii=0; ii<subW; ii++) 
+			for(ii=startI; ii<numW; ii++) 
 			{
-				w=minW+(ii+startW)*dW;
+				w=minW+ii*dW;
 				
 				if(D->numeric==OFF) {
 					chi0=w*t;		
@@ -631,14 +619,14 @@ void calRadiation(Domain D,double ***intensity,double **spectraR,double **spectr
 
 			}			// End of for(W)
 
-//			if(myrank==0 && nn%(maxStep/4)==0) { 
-//				printf("step %d/%d is done for %d/%d and screen %d/%d.\n",nn,maxStep,index,end,idx,D->scrN); 
-//			} else ;
+			if(myrank==0 && nn%100==0) { 
+				printf("step %d/%d is done for %d/%d and screen %d/%d.\n",nn,maxStep,index,end,idx,D->scrN); 
+			} else ;
 
 			t+=dt;
 		}					// End of for(nn)
 
-		for(ii=0; ii<subW; ii++) 
+		for(ii=startI; ii<numW; ii++) 
 			for(i=0; i<3; i++) 
 				intensity[ii][idx][i]+=spectraR[ii][i]*spectraR[ii][i]+spectraI[ii][i]*spectraI[ii][i];
 
@@ -647,107 +635,65 @@ void calRadiation(Domain D,double ***intensity,double **spectraR,double **spectr
 }
 
 
-void saveSpectra(Domain D,double ***intensity)
+void saveSpectra(Domain D,double ***intensity,int pCnt)
 {
-	int i,j,k,ii,numW,idx,startW,subW,index,rank,dataNum;
-	double minW,dW,w,spR,spI,coef,sum[3],I0[3],dr,th1,th2,X0,steradian;
-	double *result,*recv;
+	int i,ii,numW,idx;
+	double minW,maxW,dW,w,spR,spI,coef,sum[3],I0[3],dr,th1,th2,X0,steradian;
+	double unitN;
 	FILE *out1,*out2;
 	char name1[100],name2[100];
 
-	int myrank, nTasks;	
-	MPI_Status status;
-	MPI_Comm_size(MPI_COMM_WORLD, &nTasks);
-	MPI_Comm_rank(MPI_COMM_WORLD, &myrank);
-
-	startW = D->startW;
-	subW = D->subW;
 	numW = D->numW;
 	minW = D->minW;
 	dW = D->dW;
+	maxW = dW*numW;
 	dr=D->dr;
 	X0=D->screenX0;
 
-	dataNum=D->numW*D->scrN*3;
-	result = (double *)malloc(dataNum*sizeof(double ));
-	recv = (double *)malloc(dataNum*sizeof(double ));
-	for(i=0; i<dataNum; i++)  {
-		result[i]=0.0;
-		recv[i]=0.0;
-	}
-	
-	for(i=0; i<D->subW; i++)  
-		for(j=0; j<D->scrN; j++)  
-			for(k=0; k<3; k++)  {
-				index=(i+startW)*D->scrN*3+j*3+k;
-				result[index]=intensity[i][j][k];
-			}
-
-	if(myrank!=0)
-		MPI_Send(result,dataNum,MPI_DOUBLE,0,myrank,MPI_COMM_WORLD);
-	else {
-		for(rank=1; rank<nTasks; rank++) {
-			MPI_Recv(recv,dataNum,MPI_DOUBLE,rank,rank,MPI_COMM_WORLD,&status);
-			for(i=0; i<dataNum; i++)
-				result[i]+=recv[i];
-		}
-	}
-
 	coef = mu0*e*e*c/16.0/(M_PI*M_PI*M_PI);
-
-   if(D->correction==OFF) {
-	   sprintf(name1,"%gspectra_OFF",D->scrAngle);
-   	sprintf(name2,"%gspectraSum_OFF",D->scrAngle);
-	} else {
-	   sprintf(name1,"%gspectra_ON",D->scrAngle);
-   	sprintf(name2,"%gspectraSum_ON",D->scrAngle);
-	}
-
-	if(myrank==0) {
-		out1=fopen(name1,"w");
-		out2=fopen(name2,"w");
-		fprintf(out1,"#energy[eV] y[m] intensity_z[SI] intensity_x[SI] intensity_y[SI]\n");
-		fprintf(out1,"\n");
-		fprintf(out2,"#energy[eV] intensity_z[SI] intensity_x[SI] intensity_y[SI]\n");
-		fprintf(out2,"\n");
-		for(ii=0; ii<numW; ii++) {
-			w=minW+ii*dW;
-			for(i=0; i<3; i++) sum[i]=0.0;
-			idx=0;
+	
+	if(D->mode==0 || D->mode==2 || D->testMode==1) pCnt=1; 
+	else { pCnt=pCnt/D->jumpP; }
+   sprintf(name1,"%gspectra%d_%d",D->scrAngle,D->correction,pCnt);
+   sprintf(name2,"%gspectraSum%d_%d",D->scrAngle,D->correction,pCnt);
+	out1=fopen(name1,"w");
+	out2=fopen(name2,"w");
+	for(ii=0; ii<numW; ii++) {
+		w=minW+ii*dW;
+		unitN=maxW/w/hbarJ;
+		for(i=0; i<3; i++) sum[i]=0.0;
+		idx=0;
 //			steradian=0.25*M_PI*dr*dr/(X0*X0+r*r);
-				th2=(idx+1)*dr/X0;
-				th1=idx*dr/X0;
-				steradian=M_PI*(th2*th2-th1*th1);
-				fprintf(out1,"%g %g ",w*hbar,idx*dr);
-				for(i=0; i<3; i++) {
-					index=ii*D->scrN*3+idx*3+i;
-					I0[i]=result[index]*coef;
-					sum[i]+=I0[i]*steradian;
-				}
-				fprintf(out1,"%g %g %g",I0[0],I0[1],I0[2]);
-				if(D->scrN>1) fprintf(out1,"\n"); else ;
-		
-			for(idx=1; idx<D->scrN; idx++) {
-				th2=(idx+1)*dr/X0;
-				th1=idx*dr/X0;
-				steradian=M_PI*(th2*th2-th1*th1);
-				fprintf(out1,"%g %g ",w*hbar,idx*dr);
-				for(i=0; i<3; i++) {
-					index=ii*D->scrN*3+idx*3+i;
-					I0[i]=result[index]*coef;
-					sum[i]+=I0[i]*steradian;
-				}
-				fprintf(out1,"%g %g %g",I0[0],I0[1],I0[2]);
-				if(D->scrN>1) fprintf(out1,"\n"); else ;
+			th2=(idx+1)*dr/X0;
+			th1=idx*dr/X0;
+			steradian=M_PI*(th2*th2-th1*th1);
+			fprintf(out1,"%g %g ",w*hbar,th1);
+			for(i=0; i<3; i++) {
+				I0[i]=intensity[ii][idx][i]*coef;
+				sum[i]+=I0[i]*steradian;
 			}
-			fprintf(out1,"\n");		
-			fprintf(out2,"%g %g %g %g\n",w*hbar,sum[0],sum[1],sum[2]);
+			fprintf(out1,"%g %g %g",I0[0],I0[1],I0[2]);
+			if(D->scrN>1) fprintf(out1,"\n"); else ;
+		
+		for(idx=1; idx<D->scrN; idx++) {
+			th2=(idx+1)*dr/X0;
+			th1=idx*dr/X0;
+			steradian=M_PI*(th2*th2-th1*th1);
+			fprintf(out1,"%g %g ",w*hbar,th1);
+			for(i=0; i<3; i++) {
+				I0[i]=intensity[ii][idx][i]*coef;
+				sum[i]+=I0[i]*steradian;
+			}
+			fprintf(out1,"%g %g %g",I0[0],I0[1],I0[2]);
+			if(D->scrN>1) fprintf(out1,"\n"); else ;
 		}
-		fclose(out1);
-		fclose(out2);
-		printf("%s is made.\n",name1);
-		printf("%s is made.\n",name2);
-	} else ;
+		fprintf(out1,"\n");		
+		fprintf(out2,"%g %g %g %g\n",w*hbar,sum[0],sum[1],sum[2]);
+	}
+	fclose(out1);
+	fclose(out2);
+	printf("%s is made.\n",name1);
+	printf("%s is made.\n",name2);
 
 
 }

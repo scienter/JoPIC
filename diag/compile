@@ -10,8 +10,11 @@
 #LDFLAGS="-L/usr/lib/x86_64-linux-gnu/hdf5/openmpi" 
 
 # server
-CFLAGS="-I/opt/hdf5/1.10.3/include"
-LDFLAGS="-L/opt/hdf5/1.10.3/lib"
+#CFLAGS = "-I/opt/gsl/2.6/include -I/opt/fftw/3.3.8/include -I/opt/hdf5/1.10.3/include"
+#LDFLAGS = "-L/opt/gsl/2.6/lib -L/opt/fftw/3.3.8/lib -L/opt/hdf5/1.10.3/lib"
+
+CFLAGS="-I/opt/hdf5/1.10.3/include -I/opt/gsl/2.6/include"
+LDFLAGS="-L/opt/hdf5/1.10.3/lib -L/opt/gsl/2.6/lib"
 
 
 gcc -o fft fft.c -lm
@@ -38,6 +41,7 @@ echo 'track is made.'
 mpicc -o particle particle.c -lm -lhdf5 ${CFLAGS} ${LDFLAGS}
 echo 'particle is made.'
 
-mpicc -o sync sync.c -lm -lhdf5 ${CFLAGS} ${LDFLAGS}
+mpicc -o sync ${CFLAGS} ${LDFLAGS} sync.c -lm -lhdf5 -lgsl -lgslcblas 
+#mpicc -o sync sync20221216.c -lm -lhdf5 ${CFLAGS} ${LDFLAGS}
 echo 'sync is made.'
 
