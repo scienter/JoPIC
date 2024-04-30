@@ -172,6 +172,10 @@ int main(int argc, char *argv[])
   	  	// redistributing particles lala
   	  	//if(D.redist==ON && iteration>0) particle_redist(&D,iteration,&Ext); else;
 
+  	  	fieldSolve2(D,t,iteration);
+  	  	//printf("fieldSolve2,iteration=%d\n",iteration);
+
+  	  	solveF(D);
 
 
   	  	interpolation(&D,&Ext,iteration);
@@ -242,13 +246,9 @@ int main(int argc, char *argv[])
 
   	  	}  
 
-  	  	solveF(D);
 
   	  	fieldSolve1(D,t,iteration);
   	  	//printf("fieldSolve1,iteration=%d\n",iteration);
-
-  	  	fieldSolve2(D,t,iteration);
-  	  	//printf("fieldSolve2,iteration=%d\n",iteration);
 
   	  	//time update
   	  	if(iteration%10==0 && myrank==0) printf("iteration = %d\n",iteration); else ;

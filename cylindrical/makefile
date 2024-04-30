@@ -13,8 +13,9 @@ LDFLAGS = -L/opt/gsl/2.6/lib -L/opt/hdf5/1.10.3/lib
 #LDFLAGS = -L/home/scienter/gsl2.6/lib -L/usr/lib/x86_64-linux-gnu/hdf5/openmpi
 
 #-------- for home computer ----------#
-#CFLAGS= -I/home/scienter/gsl2.6/include -I/usr/lib/x86_64-linux-gnu/hdf5/openmpi/include
-#LDFLAGS= -L/home/scienter/gsl2.6/lib -L/usr/lib/x86_64-linux-gnu/hdf5/openmpi
+CFLAGS= -I/usr/include/hdf5/openmpi
+LDFLAGS= -L/usr/lib/x86_64-linux-gnu/hdf5/openmpi
+
 
 
 

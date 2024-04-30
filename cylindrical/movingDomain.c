@@ -195,7 +195,6 @@ void movingDomain_Cylind(Domain *D,int iteration)
           while(p)  {
             p->z-=1.0;  
             p->oldZ-=1.0;
-            p->oldZ2-=1.0;
             p=p->next;
           }
         }	

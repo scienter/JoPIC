@@ -51,9 +51,6 @@ void particlePush(Domain *D,int iteration)
 				p=particle[i][j].head[s]->pt;     
 				while(p)
 				{
-					p->oldZ2=p->oldZ;	    
-					p->oldX2=p->oldX;	    
-					p->oldY2=p->oldY;	    
 					p->oldZ=i+p->z;	    
 					p->oldX=p->x;	    
 					p->oldY=p->y;	    

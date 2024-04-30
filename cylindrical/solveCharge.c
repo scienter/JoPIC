@@ -135,11 +135,12 @@ void solveF_Split(Domain *D)
    	   upSlR=0.5*(D->SlR[m][i][j]  +D->SlR[m][i-1][j]);
 
    	   D->FR[m][i][j]=
-   	     	2.0*invDr*(upPrR+upPlR)
+   	     	invDr*(upPrR+upPlR)
    	     	+0.5*invDz*(D->EzNowR[m][i+1][j]-D->EzNowR[m][i-1][j])
    	     	-2.0*M_PI*(D->RhoNoPairR[m][i][j]+D->RhoPairR[m][i][j]);
    	}	 	 
-  	m=1;
+    
+  	for(m=1; m<numMode; m++)
     	for(i=istart; i<iend; i++) {
       	upPrR=0.5*(D->PrR[m][i][j]  +D->PrR[m][i-1][j]);
       	upPlR=0.5*(D->PlR[m][i][j]  +D->PlR[m][i-1][j]);
@@ -151,38 +152,17 @@ void solveF_Split(Domain *D)
       	upSlI=0.5*(D->SlI[m][i][j]  +D->SlI[m][i-1][j]);
 
 			D->FR[m][i][j]=
-      	  	1.0*invDr*(upPrR+upPlR)
+      	  	invDr*(upPrR+upPlR)
       	  	-1.0*invDr*m*(upSrI+upSlI)
       	  	+0.5*invDz*(D->EzNowR[m][i+1][j]-D->EzNowR[m][i-1][j])
       	  	-2.0*M_PI*(D->RhoNoPairR[m][i][j]+D->RhoPairR[m][i][j]);
       	D->FI[m][i][j]=
-      	  	1.0*invDr*(upPrI+upPlI)
+      	  	invDr*(upPrI+upPlI)
       	  	+1.0*invDr*m*(upSrR+upSlR)
       	  	+0.5*invDz*(D->EzNowI[m][i+1][j]-D->EzNowI[m][i-1][j])
       	  	-2.0*M_PI*(D->RhoNoPairI[m][i][j]+D->RhoPairI[m][i][j]);
     	}
-  	for(m=2; m<numMode; m++)
-    	for(i=istart; i<iend; i++) {
-      	upPrR=0.5*(D->PrR[m][i][j]  +D->PrR[m][i-1][j]);
-      	upPlR=0.5*(D->PlR[m][i][j]  +D->PlR[m][i-1][j]);
-      	upPrI=0.5*(D->PrI[m][i][j]  +D->PrI[m][i-1][j]);
-      	upPlI=0.5*(D->PlI[m][i][j]  +D->PlI[m][i-1][j]);
-      	upSrR=0.5*(D->SrR[m][i][j]  +D->SrR[m][i-1][j]);
-      	upSlR=0.5*(D->SlR[m][i][j]  +D->SlR[m][i-1][j]);
-      	upSrI=0.5*(D->SrI[m][i][j]  +D->SrI[m][i-1][j]);
-      	upSlI=0.5*(D->SlI[m][i][j]  +D->SlI[m][i-1][j]);
-
-		  	D->FR[m][i][j]=
-        		2.0*invDr*(upPrR+upPlR)
-        		-1.0*invDr*m*(upSrI+upSlI)
-        		+0.5*invDz*(D->EzNowR[m][i+1][j]-D->EzNowR[m][i-1][j])
-        		-2.0*M_PI*(D->RhoNoPairR[m][i][j]+D->RhoPairR[m][i][j]);
-      	D->FI[m][i][j]=
-        		2.0*invDr*(upPrI+upPlI)
-        		+1.0*invDr*m*(upSrR+upSlR)
-        		+0.5*invDz*(D->EzNowI[m][i+1][j]-D->EzNowI[m][i-1][j])
-        		-2.0*M_PI*(D->RhoNoPairI[m][i][j]+D->RhoPairI[m][i][j]);
-    	}
+   
 
    D->shareF[0]=D->FR;
    D->shareF[1]=D->FI;
@@ -335,7 +315,7 @@ void solveF_Yee(Domain *D)
 void solveCharge(Domain *D,LoadList *LL,double ***rhoR,double ***rhoI,int istart,int iend,int jstart,int jend,int s,double coef)
 {
   int i,j,n,m,index,ii,jj,i1,j1,numMode,minRSub,cnt;
-  double z,x,y,r,phi,Wz[2],Wr[2],weight,factor,tmp,value,invR,alpha;
+  double z,x,y,r,phi,Wz[2],Wr[2],weight,factor[2],tmp,value,invR,alpha;
   double coss[D->numMode],sins[D->numMode],rho0;
   Particle **particle;
   particle=D->particle;
@@ -360,7 +340,7 @@ void solveCharge(Domain *D,LoadList *LL,double ***rhoR,double ***rhoI,int istart
           r=sqrt(x*x+y*y);   invR=1.0/r;
           index=j-jstart;
 
-          Wr[0]=((index+1)*(index+1)-r*r)/(2.0*index+1.0);
+          Wr[0]=((index+r)*(1-(r-index)))/(2.0*r);
           Wr[1]=1.0-Wr[0];
           Wz[1]=z-(int)(z);              Wz[0]=1.0-Wz[1];
 
@@ -370,11 +350,11 @@ void solveCharge(Domain *D,LoadList *LL,double ***rhoR,double ***rhoI,int istart
             sins[m]=sins[m-1]*coss[1]+coss[m-1]*sins[1];
           }
 
-          factor=weight/(2.0*r);
+          factor[0]=weight/(2.0*(index));
+          factor[1]=weight/(2.0*(index+1.0));
           for(ii=0; ii<2; ii++)
             for(jj=0; jj<2; jj++) {
-//              factor=weight/(2.0*(j+jj-jstart));
-              tmp=Wr[jj]*Wz[ii]*factor;
+              tmp=Wr[jj]*Wz[ii]*factor[jj];
               rhoR[0][i+ii][j+jj]+=tmp;
               for(m=1; m<numMode; m++) {
                 rhoR[m][i+ii][j+jj]+=tmp*coss[m]*alpha;
@@ -396,7 +376,8 @@ void solveCharge(Domain *D,LoadList *LL,double ***rhoR,double ***rhoI,int istart
           r=sqrt(x*x+y*y);   invR=1.0/r;
           index=j-jstart;
 
-          Wr[0]=((index+1)*(index+1)-r*r)/(2.0*index+1.0);
+          if(r<0) Wr[0]=(r*r-r+0.5)/(2.0*r*r+0.5);
+			 else    Wr[0]=(1.0-r)*0.5;
           Wr[1]=1.0-Wr[0];
           Wz[1]=z-(int)(z);              Wz[0]=1.0-Wz[1];
 
@@ -406,18 +387,18 @@ void solveCharge(Domain *D,LoadList *LL,double ***rhoR,double ***rhoI,int istart
             sins[m]=sins[m-1]*coss[1]+coss[m-1]*sins[1];
           }
 
-			 if(r<0.5)  factor=weight/((0.5+r)*(0.5+r));
-			 else       factor=weight/(2.0*r);
+			 factor[0]=weight/(0.25);
+			 factor[1]=weight/(2.0);
           m=0;
           for(ii=0; ii<2; ii++) 
           	for(jj=0; jj<2; jj++) {
-              tmp=Wr[jj]*Wz[ii]*factor;
+              tmp=Wr[jj]*Wz[ii]*factor[jj];
               rhoR[m][i+ii][j+jj]+=tmp;
             }
           for(m=1; m<numMode; m++) 
             for(ii=0; ii<2; ii++) {
               for(jj=1; jj<2; jj++) {
-                tmp=Wr[jj]*Wz[ii]*factor;
+                tmp=Wr[jj]*Wz[ii]*factor[jj];
                 rhoR[m][i+ii][j+jj]+=tmp*coss[m]*alpha;
                 rhoI[m][i+ii][j+jj]-=tmp*sins[m]*alpha;
               }
