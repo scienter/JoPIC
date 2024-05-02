@@ -15,6 +15,8 @@ void rearrangeParticles(Domain *D)
     int istart,iend,jstart,jend;
     double z,x,y,R,r;
     ptclList *p,*New,*prev,*tmp;
+    int myrank;
+  	 MPI_Comm_rank(MPI_COMM_WORLD, &myrank);
 
     istart=D->istart;    iend=D->iend;
     jstart=D->jstart;    jend=D->jend;
@@ -57,7 +59,7 @@ void rearrangeParticles(Domain *D)
             {
               if(cnt==1)
               {
-                p->z=z;   
+                p->z=z;
                 particle[i][j].head[s]->pt = p->next;
                 p->next = particle[i+intX][j+intY].head[s]->pt;
                 particle[i+intX][j+intY].head[s]->pt = p;

@@ -292,7 +292,7 @@ void solveF(Domain D);
 void solveCharge(Domain *D,LoadList *LL,double ***rhoR,double ***rhoI,int istart,int iend,int jstart,int jend,int s,double coef);
 void movingPairCharge(Domain *D);
 void filter(Domain *D,double ***dataR,double ***dataI);
-void filter_center(Domain *D,double ***dataR,double ***dataI,int ny);
+void filter_center(Domain *D,double ***dataR,double ***dataI,int iteration);
 void filterFieldC(Domain *D);
 void ionizationSetup(LoadList *LL,int species);
 void fieldIonization(Domain *D,int iteration);

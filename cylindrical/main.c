@@ -167,19 +167,24 @@ int main(int argc, char *argv[])
   	  	//save center field      
   	  	if(iteration%D.centerStep==0) saveCenterField(&D,iteration); else	;
   	  	MPI_Barrier(MPI_COMM_WORLD);
+  	  	//if(myrank==0) printf("saveCenterField at iteration=%d\n",iteration);
 
 
   	  	// redistributing particles lala
   	  	//if(D.redist==ON && iteration>0) particle_redist(&D,iteration,&Ext); else;
 
   	  	fieldSolve2(D,t,iteration);
-  	  	//printf("fieldSolve2,iteration=%d\n",iteration);
+  	  	//if(myrank==0) printf("fieldSolve2,iteration=%d\n",iteration);
+		
+		filter_center(&D,D.EzR,D.EzNowR,iteration);
+		   
 
   	  	solveF(D);
+  	  	//if(myrank==0) printf("solveF,iteration=%d\n",iteration);
 
 
   	  	interpolation(&D,&Ext,iteration);
-  	  	//printf("interpolation,iteration=%d\n",iteration);
+  	  	//if(myrank==0) printf("interpolation,iteration=%d\n",iteration);
 
   	  	// Plasma lens
 		PL=D.lensList;
@@ -187,17 +192,19 @@ int main(int argc, char *argv[])
 			plasmaLens(&D,PL,iteration);
 			PL=PL->next;
 		}
+  	  	//if(myrank==0) printf("plasmaLens,iteration=%d\n",iteration);
 
   	  	if(D.fieldIonization==ON) fieldIonization(&D,iteration); else;
+  	  	//if(myrank==0) printf("fieldIonization,iteration=%d\n",iteration);
 
   	  	particlePush(&D,iteration);
-  	  	//printf("particle Push,iteration=%d\n",iteration);
+  	  	//if(myrank==0) printf("particle Push,iteration=%d\n",iteration);
 
 
   	  	if(D.consCheck==ON) checkEnergyCons(&D,iteration,&sumB,&sumBz,&sumBx,&sumBy); else ;
 
   	  	updateCurrent(D,iteration);
-  	  	//printf("current,iteration=%d\n",iteration);
+  	  	//if(myrank==0) printf("current,iteration=%d\n",iteration);
   	  	//calConservation(D,iteration);
 
   	  	// Moving domain calculation
@@ -205,6 +212,7 @@ int main(int argc, char *argv[])
   	  	if(D.moving==ON && x>D.maxXDomain-1)    
   	  	{
   	  	  	movingDomain(&D,iteration);
+  	  	   //if(myrank==0) printf("movingDomain,iteration=%d\n",iteration);
 
   	  	  	if(myrank==D.L-1) {
   	  	  	  	LL=D.loadList; s=0;
@@ -213,8 +221,12 @@ int main(int argc, char *argv[])
   	  	  	  	  	LL=LL->next; s++;
   	  	  	  	}
   	  	  	} else ; 
+  	  	   //if(myrank==0) printf("loadPlamsa,iteration=%d\n",iteration);
+         
   	  	  	rearrangeParticles(&D);
+  	  	   //if(myrank==0) printf("rearrngeParticle,iteration=%d\n",iteration);
   	  	  	particleShareX(D);
+  	  	   //if(myrank==0) printf("particleShareX,iteration=%d\n",iteration);
   	  	  	// if(D.Period==ON)   {
 						//   MPI_TransferP_Period_X(&D,D.istart,D.iend,D.jstart-1,D.jend+1);
 					  // } else ;
@@ -225,8 +237,10 @@ int main(int argc, char *argv[])
   	  	  	  	  	if(LL->pair==ON) 	solveCharge(&D,LL,D.RhoPairR,D.RhoPairI,D.iend-1,D.iend,D.jstart,D.jend,s,-1.0);	else ;
   	  	  	  	  	LL=LL->next;  s++;
   	  	  	  	}
+  	  	      //if(myrank==0) printf("solveChare for RhoPair,iteration=%d\n",iteration);
   	  	  	} else ;
   	  	  	removeEdge(&D);
+  	  	   //if(myrank==0) printf("removeEdge,iteration=%d\n",iteration);
   	  	} 
 
   	  	// Non-Moving domain calculation

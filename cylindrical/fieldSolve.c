@@ -90,6 +90,7 @@ void fieldSolve2(Domain D,double t,int iteration)
 		//   if(D.Period==ON)
 		// 		MPI_Transfer8F_Period_X(&D,D.EzR,D.EzI,D.BzR,D.BzI,D.EzNowR,D.EzNowI,D.BzNowR,D.BzNowI,D.nySub+5,3);
 		//   else ;
+		
 		break ;
 	}
 }
@@ -711,11 +712,6 @@ void EzBz_solve_Split(Domain *D,int iteration)
 				}
 		  }
 
-
-	// if(D->filter==ON && iteration%D->filterIter==0) {
-  //  	if(D->filterEz==ON)	filter(D,D->EzR,D->EzI); else ;
-  //  	if(D->filterBz==ON)	filter(D,D->BzR,D->BzI); else ;
-	// } else ;
 
 	// //boundary for Ez
 	// if(D->Period==OFF) {

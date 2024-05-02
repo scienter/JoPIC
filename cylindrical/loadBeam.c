@@ -149,7 +149,7 @@ void loadBeamPlasma(Domain *D,LoadList *LL,int s,int iteration)
 
           x-=delT*px/gamma;
 		    y-=delT*py/gamma;
-			 r=sqrt(x*x+y*y);
+			 r=sqrt(x*x+y*y)/dr;
 					 		
 			 indexJ=((int)r)+jstart;
 			 if(indexJ>=jstart && indexJ<jend) {
@@ -199,7 +199,7 @@ void loadBeamPlasma(Domain *D,LoadList *LL,int s,int iteration)
    } else ;	
 
    double **den,**Er,**Ez,**Bp,Wr[2],Wz[2];
-	double rho0,alpha,invR,factor,tmp;
+	double rho0,alpha,invR,factor[2],tmp;
 	int index;
 
    den = (double **)malloc((D->nxSub+5)*sizeof(double *));
@@ -246,21 +246,18 @@ void loadBeamPlasma(Domain *D,LoadList *LL,int s,int iteration)
            z=p->z;   x=p->x;   y=p->y;
            r=sqrt(x*x+y*y);   invR=1.0/r;
            index=j-jstart;
-           Wr[0]=((index+1)*(index+1)-r*r)/(2.0*index+1.0);
-           Wr[1]=1.0-Wr[0];
-           Wz[1]=z-(int)(z);              Wz[0]=1.0-Wz[1];
+           //Wr[0]=((index+1)*(index+1)-r*r)/(2.0*index+1.0);
+           Wr[0]=((index+r)*(1-(r-index)))/(2.0*r);  Wr[1]=1.0-Wr[0];
+           Wz[1]=z-(int)(z);                         Wz[0]=1.0-Wz[1];
+           factor[0]=weight/(2.0*(index));
+           factor[1]=weight/(2.0*(index+1.0));
 
-			  pz=p->pz; px=p->px; py=p->py;
+           pz=p->pz; px=p->px; py=p->py;
            gamma=sqrt(1.0+px*px+py*py+pz*pz);
            if(gamma>=minGam && gamma<maxGam) {
-             factor=weight/(2.0*index+1.0);
 	          for(ii=0; ii<2; ii++)
 	            for(jj=0; jj<2; jj++) {
-                 tmp=Wr[jj]*Wz[ii]*factor;
-//   if(tmp>0) { 
-//		printf("tmp=%g, Wr[%d]=%g, Wz[%d]=%g,weight=%g,x=%g,y=%g,r=%g,index=%d\n",tmp,jj,Wr[jj],ii,Wz[ii],weight,x,y,r,index); 
-//		exit(0); 
-//	}
+                 tmp=Wr[jj]*Wz[ii]*factor[jj];
 			        den[i+ii][j+jj]+=tmp;
 	            }			  
 			  } else ;
@@ -268,7 +265,7 @@ void loadBeamPlasma(Domain *D,LoadList *LL,int s,int iteration)
            p=p->next;
          }
 	    }     //End of for(i,j)
-												
+
      for(i=istart; i<iend; i++)
        for(j=jstart; j<jstart+1; j++) {
          p=particle[i][j].head[s]->pt;
@@ -277,22 +274,19 @@ void loadBeamPlasma(Domain *D,LoadList *LL,int s,int iteration)
            z=p->z;   x=p->x;   y=p->y;
            r=sqrt(x*x+y*y);   invR=1.0/r;
            index=j-jstart;
-           Wr[0]=((index+1)*(index+1)-r*r)/(2.0*index+1.0);
+           if(r<0) Wr[0]=(r*r-r+0.5)/(2.0*r*r+0.5);
+           else    Wr[0]=(1.0-r)*0.5;
            Wr[1]=1.0-Wr[0];
            Wz[1]=z-(int)(z);              Wz[0]=1.0-Wz[1];
 
 			  pz=p->pz; px=p->px; py=p->py;
            gamma=sqrt(1.0+px*px+py*py+pz*pz);
            if(gamma>=minGam && gamma<maxGam) {
-             factor=weight/(2.0*index+1.0);
+             factor[0]=weight/(0.25);
+             factor[1]=weight/(2.0);
 	          for(ii=0; ii<2; ii++)
-	            for(jj=0; jj<1; jj++) {
-                 tmp=Wr[jj]*Wz[ii]*factor*2.0;
-			        den[i+ii][j+jj]+=tmp;
-	            }			  
-	          for(ii=0; ii<2; ii++)
-	            for(jj=1; jj<2; jj++) {
-                 tmp=Wr[jj]*Wz[ii]*factor;
+	            for(jj=0; jj<2; jj++) {
+                 tmp=Wr[jj]*Wz[ii]*factor[jj];
 			        den[i+ii][j+jj]+=tmp;
 	            }			  
 			  } else ;

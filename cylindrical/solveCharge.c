@@ -133,14 +133,79 @@ void solveF_Split(Domain *D)
    	   upPlR=0.5*(D->PlR[m][i][j]  +D->PlR[m][i-1][j]);
    	   upSrR=0.5*(D->SrR[m][i][j]  +D->SrR[m][i-1][j]);
    	   upSlR=0.5*(D->SlR[m][i][j]  +D->SlR[m][i-1][j]);
-
+         // 1
    	   D->FR[m][i][j]=
-   	     	invDr*(upPrR+upPlR)
+   	     	2*invDr*(upPrR+upPlR)
    	     	+0.5*invDz*(D->EzNowR[m][i+1][j]-D->EzNowR[m][i-1][j])
    	     	-2.0*M_PI*(D->RhoNoPairR[m][i][j]+D->RhoPairR[m][i][j]);
-   	}	 	 
-    
-  	for(m=1; m<numMode; m++)
+         // 2
+   	   //D->FR[m][i][j]=
+   	   //  	invDr*(upPrR+upPlR)
+   	   //  	+0.5*invDz*(D->EzNowR[m][i+1][j]-D->EzNowR[m][i-1][j])
+   	   //  	-2.0*M_PI*(D->RhoNoPairR[m][i][j]+D->RhoPairR[m][i][j]);
+		   // 3
+   	   //D->FR[m][i][j]=
+   	   //  	0.5*invDr*(upPrR+upPlR+ 0.5*(D->PrR[m][i][j+1]+D->PrR[m][i-1][j+1]+D->PlR[m][i][j+1]+D->PlR[m][i-1][j+1]) )
+   	   //  	+0.5*invDz*(D->EzNowR[m][i+1][j]-D->EzNowR[m][i-1][j])
+   	   //  	-2.0*M_PI*(D->RhoNoPairR[m][i][j]+D->RhoPairR[m][i][j]);
+		   
+   	}
+		
+	m=1;
+    	for(i=istart; i<iend; i++) {
+      	upPrR=0.5*(D->PrR[m][i][j]  +D->PrR[m][i-1][j]);
+      	upPlR=0.5*(D->PlR[m][i][j]  +D->PlR[m][i-1][j]);
+      	upPrI=0.5*(D->PrI[m][i][j]  +D->PrI[m][i-1][j]);
+      	upPlI=0.5*(D->PlI[m][i][j]  +D->PlI[m][i-1][j]);
+      	upSrR=0.5*(D->SrR[m][i][j]  +D->SrR[m][i-1][j]);
+      	upSlR=0.5*(D->SlR[m][i][j]  +D->SlR[m][i-1][j]);
+      	upSrI=0.5*(D->SrI[m][i][j]  +D->SrI[m][i-1][j]);
+      	upSlI=0.5*(D->SlI[m][i][j]  +D->SlI[m][i-1][j]);
+
+         // 1
+			
+			D->FR[m][i][j]=
+   	     	0.5*invDr*(upPrR+upPlR+ 0.5*(D->PrR[m][i][j+1]+D->PrR[m][i-1][j+1]+D->PlR[m][i][j+1]+D->PlR[m][i-1][j+1]) )
+      	  	-1.0*invDr*m*(upSrI+upSlI)
+      	  	+0.5*invDz*(D->EzNowR[m][i+1][j]-D->EzNowR[m][i-1][j])
+      	  	-2.0*M_PI*(D->RhoNoPairR[m][i][j]+D->RhoPairR[m][i][j]);
+      	D->FI[m][i][j]=
+   	     	0.5*invDr*(upPrI+upPlI+ 0.5*(D->PrI[m][i][j+1]+D->PrI[m][i-1][j+1]+D->PlI[m][i][j+1]+D->PlI[m][i-1][j+1]) )
+      	  	+1.0*invDr*m*(upSrR+upSlR)
+      	  	+0.5*invDz*(D->EzNowI[m][i+1][j]-D->EzNowI[m][i-1][j])
+      	  	-2.0*M_PI*(D->RhoNoPairI[m][i][j]+D->RhoPairI[m][i][j]);
+			
+			// 2
+			/*
+			D->FR[m][i][j]=
+      	  	invDr*(upPrR+upPlR)
+   	     	//0.5*invDr*(upPrR+upPlR+ 0.5*(D->PrR[m][i][j+1]+D->PrR[m][i-1][j+1]+D->PlR[m][i][j+1]+D->PlR[m][i-1][j+1]) )
+      	  	-1.0*invDr*m*(upSrI+upSlI)
+      	  	+0.5*invDz*(D->EzNowR[m][i+1][j]-D->EzNowR[m][i-1][j])
+      	  	-2.0*M_PI*(D->RhoNoPairR[m][i][j]+D->RhoPairR[m][i][j]);
+      	D->FI[m][i][j]=
+      	  	invDr*(upPrI+upPlI)
+   	     	//0.5*invDr*(upPrI+upPlI+ 0.5*(D->PrI[m][i][j+1]+D->PrI[m][i-1][j+1]+D->PlI[m][i][j+1]+D->PlI[m][i-1][j+1]) )
+      	  	+1.0*invDr*m*(upSrR+upSlR)
+      	  	+0.5*invDz*(D->EzNowI[m][i+1][j]-D->EzNowI[m][i-1][j])
+      	  	-2.0*M_PI*(D->RhoNoPairI[m][i][j]+D->RhoPairI[m][i][j]);
+			*/
+			// 3
+		   /*	
+			D->FR[m][i][j]=
+   	     	0.25*invDr*(-upPrR-upPlR+ 3*(D->PrR[m][i][j+1]+D->PrR[m][i-1][j+1]+D->PlR[m][i][j+1]+D->PlR[m][i-1][j+1]) )
+      	  	-1.0*invDr*m*(upSrI+upSlI)
+      	  	+0.5*invDz*(D->EzNowR[m][i+1][j]-D->EzNowR[m][i-1][j])
+      	  	-2.0*M_PI*(D->RhoNoPairR[m][i][j]+D->RhoPairR[m][i][j]);
+      	D->FI[m][i][j]=
+   	     	0.25*invDr*(-upPrI-upPlI+ 3*(D->PrI[m][i][j+1]+D->PrI[m][i-1][j+1]+D->PlI[m][i][j+1]+D->PlI[m][i-1][j+1]) )
+      	  	+1.0*invDr*m*(upSrR+upSlR)
+      	  	+0.5*invDz*(D->EzNowI[m][i+1][j]-D->EzNowI[m][i-1][j])
+      	  	-2.0*M_PI*(D->RhoNoPairI[m][i][j]+D->RhoPairI[m][i][j]);
+		   */
+    	}
+		
+  	for(m=2; m<numMode; m++) 
     	for(i=istart; i<iend; i++) {
       	upPrR=0.5*(D->PrR[m][i][j]  +D->PrR[m][i-1][j]);
       	upPlR=0.5*(D->PlR[m][i][j]  +D->PlR[m][i-1][j]);
@@ -152,16 +217,16 @@ void solveF_Split(Domain *D)
       	upSlI=0.5*(D->SlI[m][i][j]  +D->SlI[m][i-1][j]);
 
 			D->FR[m][i][j]=
-      	  	invDr*(upPrR+upPlR)
+   	     	2.0*invDr*(upPrR+upPlR)
       	  	-1.0*invDr*m*(upSrI+upSlI)
       	  	+0.5*invDz*(D->EzNowR[m][i+1][j]-D->EzNowR[m][i-1][j])
       	  	-2.0*M_PI*(D->RhoNoPairR[m][i][j]+D->RhoPairR[m][i][j]);
       	D->FI[m][i][j]=
-      	  	invDr*(upPrI+upPlI)
+   	     	2.0*invDr*(upPrI+upPlI)
       	  	+1.0*invDr*m*(upSrR+upSlR)
       	  	+0.5*invDz*(D->EzNowI[m][i+1][j]-D->EzNowI[m][i-1][j])
       	  	-2.0*M_PI*(D->RhoNoPairI[m][i][j]+D->RhoPairI[m][i][j]);
-    	}
+	   }
    
 
    D->shareF[0]=D->FR;

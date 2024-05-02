@@ -120,9 +120,9 @@ void loadPolygonPlasma(Domain *D,LoadList *LL,int s,int iteration,int istart,int
  
              jj=j-jstart;
              for(n=0; n<numberRZ; n+=2) {
-               //random2D_sobol(&positionZ,&positionR,q);
-               positionZ=randomValue(1.0);             
-               positionR=randomValue(1.0);
+               random2D_sobol(&positionZ,&positionR,q);
+               //positionZ=randomValue(1.0);             
+               //positionR=randomValue(1.0);
 					if(jj==0) {
 					  if(positionR<0.5) {
                    tmpR=positionR*0.72+0.14;
