@@ -11,6 +11,8 @@ void Esolve2D_Yee(Domain *D,int iteration);
 void Bsolve2D_NoCherenkov(Domain *D,int iteration);
 void EzBz_solve_Split(Domain *D,int iteration);
 void PS_solve_Split(Domain *D,int iteration);
+void filter_center(Domain *D,int numField,int iteration);
+void EzBz_Now_Split(Domain *D,int iteration);
 
 void fieldSolve2(Domain D,double t,int iteration)
 {
@@ -70,34 +72,36 @@ void fieldSolve2(Domain D,double t,int iteration)
    	D.shareF[1]=D.EzI;
    	D.shareF[2]=D.BzR;
    	D.shareF[3]=D.BzI;
-   	D.shareF[4]=D.EzNowR;
-   	D.shareF[5]=D.EzNowI;
-   	D.shareF[6]=D.BzNowR;
-   	D.shareF[7]=D.BzNowI;
-   	MPI_TransferFNew_Xplus(&D,8,D.nySub+5,3);
-   	MPI_TransferFNew_Xminus(&D,8,D.nySub+5,3);
-	 	if(D.Period==ON) { MPI_TransferFNew_Period_X(&D,8,D.nySub+5,3); } else ;  
+   	MPI_TransferFNew_Xplus(&D,4,D.nySub+5,3);
+   	MPI_TransferFNew_Xminus(&D,4,D.nySub+5,3);
+	 	if(D.Period==ON) { MPI_TransferFNew_Period_X(&D,4,D.nySub+5,3); } else ;  
    	D.EzR=D.shareF[0];
    	D.EzI=D.shareF[1];
    	D.BzR=D.shareF[2];
    	D.BzI=D.shareF[3];
-   	D.EzNowR=D.shareF[4];
-   	D.EzNowI=D.shareF[5];
-   	D.BzNowR=D.shareF[6];
-   	D.BzNowI=D.shareF[7];		  
-		//   MPI_Transfer8F_Xplus(&D,D.EzR,D.EzI,D.EzNowR,D.EzNowI,D.BzR,D.BzI,D.BzNowR,D.BzNowI,D.nySub+5,3);
-		//   MPI_Transfer8F_Xminus(&D,D.EzR,D.EzI,D.EzNowR,D.EzNowI,D.BzR,D.BzI,D.BzNowR,D.BzNowI,D.nySub+5,3);
-		//   if(D.Period==ON)
-		// 		MPI_Transfer8F_Period_X(&D,D.EzR,D.EzI,D.BzR,D.BzI,D.EzNowR,D.EzNowI,D.BzNowR,D.BzNowI,D.nySub+5,3);
-		//   else ;
-		
+
+   	D.shareF[0]=D.EzR;
+   	D.shareF[1]=D.EzI;
+   	D.shareF[2]=D.BzR;
+   	D.shareF[3]=D.BzI;
+      filter_center(&D,4,iteration);
+      MPI_TransferFNew_Xplus(&D,4,D.nySub+5,3);
+      MPI_TransferFNew_Xminus(&D,4,D.nySub+5,3);
+      if(D.Period==ON) { MPI_TransferFNew_Period_X(&D,4,D.nySub+5,3); } else ;
+      D.EzR=D.shareF[0];
+      D.EzI=D.shareF[1];
+      D.BzR=D.shareF[2];
+      D.BzI=D.shareF[3];      
+
+      EzBz_Now_Split(&D,iteration);
+      
 		break ;
 	}
 }
 
 void fieldSolve1(Domain D,double t,int iteration)
 {
-  	int rankX,rankY;
+  	int rankX,rankY,numField;
   	float limit;
   	LaserList *L;
   	int myrank, nTasks,rank,rankM,rankN;
@@ -162,6 +166,54 @@ void fieldSolve1(Domain D,double t,int iteration)
 		// if(D.Period==ON)
 		//   MPI_Transfer8F_Period_X(&D,D.PrR,D.PrI,D.PlR,D.PlI,D.SrR,D.SrI,D.SlR,D.SlI,D.nySub+5,3);
 		// else ;
+
+         numField=0;
+         if(D.filterPr==ON) {
+            D.shareF[numField]=D.PrR;
+            D.shareF[numField+1]=D.PrI;
+            numField+=2;
+         } else ;
+         if(D.filterPl==ON) {
+            D.shareF[numField]=D.PlR;
+            D.shareF[numField+1]=D.PlI;
+            numField+=2;
+         } else ;
+         if(D.filterSr==ON) {
+            D.shareF[numField]=D.SrR;
+            D.shareF[numField+1]=D.SrI;
+            numField+=2;
+         } else ;
+         if(D.filterSl==ON) {
+             D.shareF[numField]=D.SlR;
+            D.shareF[numField+1]=D.SlI;
+            numField+=2;
+         } else ;
+         filter_center(&D,numField,iteration);
+         MPI_TransferFNew_Xplus(&D,numField,D.nySub+5,3);
+         MPI_TransferFNew_Xminus(&D,numField,D.nySub+5,3);
+         if(D.Period==ON) { MPI_TransferFNew_Period_X(&D,numField,D.nySub+5,3); } else ;
+         numField=0;
+         if(D.filterPr==ON) {
+            D.PrR=D.shareF[numField];
+            D.PrI=D.shareF[numField+1];
+            numField+=2;
+         } else ;
+         if(D.filterPl==ON) {
+            D.PlR=D.shareF[numField];
+            D.PlI=D.shareF[numField+1];
+            numField+=2;
+         } else ;                            
+         if(D.filterSr==ON) {
+            D.SrR=D.shareF[numField];
+            D.SrI=D.shareF[numField+1];
+            numField+=2;
+         } else ;
+         if(D.filterSl==ON) {
+            D.SlR=D.shareF[numField];
+            D.SlI=D.shareF[numField+1];
+            numField+=2;
+         } else ;
+
    	break ;
   	}
 }
@@ -266,7 +318,7 @@ void Bsolve2D_Yee(Domain *D,int iteration)
 {
   int i,j,m,numMode,istart,iend,jstart,jend;  
   double dtBydr,dtBydz,r,dr,BzR,BrR,BpR,BzI,BrI,BpI;
-  double oldBzR,oldBrR,oldBpR,oldBzI,oldBrI,oldBpI,cenComp;
+  double oldBzR,oldBrR,oldBpR,oldBzI,oldBrI,oldBpI;
   double upr,upd,upL,LdU,rr,rd,tmp,tmpr,tmpd,coef1,coef2,coef3,coef4;
 
   istart=D->istart;    iend=D->iend;
@@ -367,39 +419,6 @@ void Bsolve2D_Yee(Domain *D,int iteration)
         D->BpNowI[m][i][j]=0.5*(D->BpI[m][i][j]+oldBpI);
     }
 
-	cenComp=D->cenComp;
-	j=jstart;
-  if(D->compBz==ON) {
-    m=0;
-		  for(i=0; i<iend+3; i++) 
-				D->BzR[m][i][j]*=cenComp;        
-	  for(m=1; m<numMode; m++) 
-		  for(i=0; i<iend+3; i++) {
-			  D->BzR[m][i][j]*=cenComp;
-			  D->BzI[m][i][j]*=cenComp;
-		  }
-  }
-  if(D->compBr==ON) {
-    m=0;
-		  for(i=0; i<iend+3; i++) 
-				D->BrR[m][i][j]*=cenComp;        
-	  for(m=1; m<numMode; m++) 
-		  for(i=0; i<iend+3; i++) {
-			  D->BrR[m][i][j]*=cenComp;
-			  D->BrI[m][i][j]*=cenComp;
-		  }
-  }
-  if(D->compBp==ON) {
-    m=0;
-		  for(i=0; i<iend+3; i++) 
-				D->BpR[m][i][j]*=cenComp;        
-	  for(m=1; m<numMode; m++) 
-		  for(i=0; i<iend+3; i++) {
-			  D->BpR[m][i][j]*=cenComp;
-			  D->BpI[m][i][j]*=cenComp;
-		  }
-  }
-
 }
 
 void Esolve2D_Yee(Domain *D,int iteration)
@@ -412,7 +431,7 @@ void Esolve2D_Yee(Domain *D,int iteration)
   double beforeEpR,beforeEpI,beforeEzR,beforeEzI,beforeErR,beforeErI;
   double nowEpR,nowEpI,nowEzR,nowEzI,nowErR,nowErI;
   double beforeBpR,beforeBpI,beforeBzR,beforeBzI,beforeBrR,beforeBrI;
-  double nowBpR,nowBpI,nowBzR,nowBzI,nowBrR,nowBrI,cenComp;
+  double nowBpR,nowBpI,nowBzR,nowBzI,nowBrR,nowBrI;
 
   istart=D->istart;    iend=D->iend;
   jstart=D->jstart;    jend=D->jend;
@@ -568,39 +587,6 @@ void Esolve2D_Yee(Domain *D,int iteration)
           +dF*dtBydr*(D->FI[m][i][j+1]-D->FI[m][i][j]);
     }
 
-	cenComp=D->cenComp;
-	j=jstart;
-  if(D->compEz==ON) {
-    m=0;
-		  for(i=0; i<iend+3; i++) 
-				D->EzR[m][i][j]*=cenComp;        
-	  for(m=1; m<numMode; m++) 
-		  for(i=0; i<iend+3; i++) {
-			  D->EzR[m][i][j]*=cenComp;
-			  D->EzI[m][i][j]*=cenComp;
-		  }
-  }
-  if(D->compEr==ON) {
-    m=0;
-		  for(i=0; i<iend+3; i++) 
-				D->ErR[m][i][j]*=cenComp;        
-	  for(m=1; m<numMode; m++) 
-		  for(i=0; i<iend+3; i++) {
-			  D->ErR[m][i][j]*=cenComp;
-			  D->ErI[m][i][j]*=cenComp;
-		  }
-  }
-  if(D->compEp==ON) {
-    m=0;
-		  for(i=0; i<iend+3; i++) 
-				D->EpR[m][i][j]*=cenComp;        
-	  for(m=1; m<numMode; m++) 
-		  for(i=0; i<iend+3; i++) {
-			  D->EpR[m][i][j]*=cenComp;
-			  D->EpI[m][i][j]*=cenComp;
-		  }
-  }
-
 }
 
 void EzBz_solve_Split(Domain *D,int iteration)
@@ -612,7 +598,7 @@ void EzBz_solve_Split(Domain *D,int iteration)
   double upPrI,upPlI,upSrI,upSlI;
   double dnPrI,dnPlI,dnSrI,dnSlI,PrI,PlI,SrI,SlI;
   double rr,rd,upL,LdU,tmpr,tmpd,tmp,upr,upd;
-  double BzROld,BzIOld,EzROld,EzIOld,cenComp;
+  double BzROld,BzIOld,EzROld,EzIOld;
 
   istart=D->istart;    iend=D->iend;
   jstart=D->jstart;    jend=D->jend;
@@ -732,56 +718,12 @@ void EzBz_solve_Split(Domain *D,int iteration)
 	// 			}
 	// 	} else ;
 
-	cenComp=D->cenComp;
-	j=jstart;
-  if(D->compEz==ON) {
-    m=0;
-		  for(i=0; i<iend+3; i++) 
-        D->EzR[m][i][j]*=cenComp;              
-	  for(m=1; m<numMode; m++) 
-		  for(i=0; i<iend+3; i++) {
-			  D->EzR[m][i][j]*=cenComp;
-			  D->EzI[m][i][j]*=cenComp;
-		  }
-
-  }
-  if(D->compBz==ON) {
-    m=0;
-		  for(i=0; i<iend+3; i++) 
-				D->BzR[m][i][j]*=cenComp;
-	  for(m=1; m<numMode; m++) 
-		  for(i=0; i<iend+3; i++) {
-			  D->BzR[m][i][j]*=cenComp;
-			  D->BzI[m][i][j]*=cenComp;
-		  }
-  }  
-  // if(D->compEz==ON) {
-  //   m=0;
-	// 	  for(i=0; i<iend+3; i++) 
-  //       D->EzR[m][i][j]=(1.0-cenComp)*D->EzR[m][i][j+2]+cenComp*D->EzR[m][i][j];              
-	//   for(m=1; m<numMode; m++) 
-	// 	  for(i=0; i<iend+3; i++) {
-	// 		  D->EzR[m][i][j]=(1.0-cenComp)*D->EzR[m][i][j+2]+cenComp*D->EzR[m][i][j];
-	// 		  D->EzI[m][i][j]=(1.0-cenComp)*D->EzI[m][i][j+2]+cenComp*D->EzI[m][i][j];
-	// 	  }
-
-  // }
-  // if(D->compBz==ON) {
-  //   m=0;
-	// 	  for(i=0; i<iend+3; i++) 
-	// 			D->BzR[m][i][j]=(1.0-cenComp)*D->BzR[m][i][j+2]+cenComp*D->BzR[m][i][j];      
-	//   for(m=1; m<numMode; m++) 
-	// 	  for(i=0; i<iend+3; i++) {
-	// 		  D->BzR[m][i][j]=(1.0-cenComp)*D->BzR[m][i][j+2]+cenComp*D->BzR[m][i][j];
-	// 		  D->BzI[m][i][j]=(1.0-cenComp)*D->BzI[m][i][j+2]+cenComp*D->BzI[m][i][j];
-	// 	  }
-  // }
 }
 
 void PS_solve_Split(Domain *D,int iteration)
 {
   int i,j,m,numMode,istart,iend,jstart,jend;  
-  double dtBydr,dtBydz,r,dr,dz,dt,dF,cenComp;
+  double dtBydr,dtBydz,r,dr,dz,dt,dF;
   double rr,rd,upL,LdU,tmpr,tmpd,tmp,upr,upd;
 
   int myrank, nTasks;
@@ -869,92 +811,25 @@ void PS_solve_Split(Domain *D,int iteration)
 		  }         //End of j
 	 }
 
-
-	cenComp=D->cenComp;
-	j=jstart;
-  if(D->compSr==ON) {
-    m=0;
-		  for(i=0; i<iend+3; i++) 
-				D->SrR[m][i][j]*=cenComp;        
-	  for(m=1; m<numMode; m++) 
-		  for(i=0; i<iend+3; i++) {
-			  D->SrR[m][i][j]*=cenComp;
-			  D->SrI[m][i][j]*=cenComp;
-		  }
-  }
-  if(D->compSl==ON) {
-    m=0;
-		  for(i=0; i<iend+3; i++) 
-				D->SlR[m][i][j]*=cenComp;
-	  for(m=1; m<numMode; m++) 
-		  for(i=0; i<iend+3; i++) {
-			  D->SlR[m][i][j]*=cenComp;
-			  D->SlI[m][i][j]*=cenComp;
-		  }
-  }
-  if(D->compPr==ON) {
-    m=0;
-		  for(i=0; i<iend+3; i++) 
-				D->PrR[m][i][j]*=cenComp;
-	  for(m=1; m<numMode; m++) 
-		  for(i=0; i<iend+3; i++) {
-			  D->PrR[m][i][j]*=cenComp;
-			  D->PrI[m][i][j]*=cenComp;
-		  }
-  }
-  if(D->compPl==ON) {
-    m=0;
-		  for(i=0; i<iend+3; i++) 
-				D->PlR[m][i][j]*=cenComp;
-	  for(m=1; m<numMode; m++) 
-		  for(i=0; i<iend+3; i++) {
-			  D->PlR[m][i][j]*=cenComp;
-			  D->PlI[m][i][j]*=cenComp;
-		  }
-  }
-  
-  // if(D->compSr==ON) {
-  //   m=0;
-	// 	  for(i=0; i<iend+3; i++) 
-	// 			D->SrR[m][i][j]=(1.0-cenComp)*D->SrR[m][i][j+2]+cenComp*D->SrR[m][i][j];        
-	//   for(m=1; m<numMode; m++) 
-	// 	  for(i=0; i<iend+3; i++) {
-	// 		  D->SrR[m][i][j]=(1.0-cenComp)*D->SrR[m][i][j+2]+cenComp*D->SrR[m][i][j];
-	// 		  D->SrI[m][i][j]=(1.0-cenComp)*D->SrI[m][i][j+2]+cenComp*D->SrI[m][i][j];
-	// 	  }
-  // }
-  // if(D->compSl==ON) {
-  //   m=0;
-	// 	  for(i=istart; i<iend; i++) 
-	// 			D->SlR[m][i][j]=(1.0-cenComp)*D->SlR[m][i][j+2]+cenComp*D->SlR[m][i][j];
-	//   for(m=1; m<numMode; m++) 
-	// 	  for(i=istart; i<iend; i++) {
-	// 		  D->SlR[m][i][j]=(1.0-cenComp)*D->SlR[m][i][j+2]+cenComp*D->SlR[m][i][j];
-	// 		  D->SlI[m][i][j]=(1.0-cenComp)*D->SlI[m][i][j+2]+cenComp*D->SlI[m][i][j];
-	// 	  }
-  // }
-  // if(D->compPr==ON) {
-  //   m=0;
-	// 	  for(i=0; i<iend+3; i++) 
-	// 			D->PrR[m][i][j]=(1.0-cenComp)*D->PrR[m][i][j+2]+cenComp*D->PrR[m][i][j];
-	//   for(m=1; m<numMode; m++)
-	// 	  for(i=0; i<iend+3; i++) {
-	// 		  D->PrR[m][i][j]=(1.0-cenComp)*D->PrR[m][i][j+2]+cenComp*D->PrR[m][i][j];
-	// 		  D->PrI[m][i][j]=(1.0-cenComp)*D->PrI[m][i][j+2]+cenComp*D->PrI[m][i][j];
-	// 	  }
-  // }
-  // if(D->compPl==ON) {
-  //   m=0;
-	// 	  for(i=istart; i<iend; i++) 
-	// 			D->PlR[m][i][j]=(1.0-cenComp)*D->PlR[m][i][j+2]+cenComp*D->PlR[m][i][j];
-	//   for(m=1; m<numMode; m++) 
-	// 	  for(i=istart; i<iend; i++) {
-	// 		  D->PlR[m][i][j]=(1.0-cenComp)*D->PlR[m][i][j+2]+cenComp*D->PlR[m][i][j];
-	// 		  D->PlI[m][i][j]=(1.0-cenComp)*D->PlI[m][i][j+2]+cenComp*D->PlI[m][i][j];
-	// 	  }
-  // }
 }
 
+void EzBz_Now_Split(Domain *D,int iteration)
+{
+  int i,j,m,numMode,istart,iend,jstart,jend;
+  double BzROld,BzIOld,EzROld,EzIOld;
 
+  istart=D->istart;    iend=D->iend;
+  jstart=D->jstart;    jend=D->jend;
+  numMode=D->numMode;
+
+  for(m=0; m<numMode; m++)
+     for(i=0; i<iend+3; i++)
+        for(j=0; j<jend+3; j++) {
+           D->EzNowR[m][i][j]=0.5*(D->EzR[m][i][j]+D->EzNowR[m][i][j]);
+           D->EzNowI[m][i][j]=0.5*(D->EzI[m][i][j]+D->EzNowI[m][i][j]);
+           D->BzNowR[m][i][j]=0.5*(D->BzR[m][i][j]+D->BzNowR[m][i][j]);
+           D->BzNowI[m][i][j]=0.5*(D->BzI[m][i][j]+D->BzNowI[m][i][j]);
+        }
+}
 
 

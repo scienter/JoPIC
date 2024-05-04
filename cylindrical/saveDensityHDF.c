@@ -25,7 +25,7 @@ void saveDensityHDF(Domain *D,int iteration)
 {
     int i,j,m,s,istart,iend,jstart,jend,nx,ny,nz,numMode;
     int biasX,biasY,offSetY,rankX,rankY,minRSub;
-    int nxSub,nySub,iter;
+    int nxSub,nySub;
     int offset[3];
     double ***dataR,***dataI,***val;
     double charge,coef;
@@ -43,7 +43,6 @@ void saveDensityHDF(Domain *D,int iteration)
     istart=D->istart;  iend=D->iend;
     jstart=D->jstart;  jend=D->jend;
     numMode=D->numMode;
-	 iter=D->filterIter;
 
     rankX=myrank/D->M;
     rankY=myrank%D->M;
@@ -97,44 +96,8 @@ void saveDensityHDF(Domain *D,int iteration)
         MPI_TransferDen_Xminus(D,dataR,dataI,nySub+5,3);
       }  else ;
 
-//      filter(D,dataR,dataI);
-/*
-      val=(double ***)malloc(1*sizeof(double ** ));
-      for(m=0; m<1; m++) {
-        val[m]=(double **)malloc((D->nxSub+5)*sizeof(double * ));
-        for(i=0; i<D->nxSub+5; i++)
-          val[m][i]=(double *)malloc((D->nySub+5)*sizeof(double  ));
-      }
-      for(i=0; i<D->nxSub+5; i++)
-        for(j=0; j<D->nySub+5; j++)
-          val[0][i][j]=0.0;
-    
-      filter_current(D,val,dataR,iter);
-      filter_current(D,val,dataI,iter);
-
-      for(i=0; i<D->nxSub+5; i++) free(val[0][i]);
-      free(val[0]); free(val);
-*/
-
-
-
-
-//      solveCharge(D,dataR,dataI,rho0[s],s);
-
-//      for(m=0; m<numMode; m++)      
-//       for(i=istart; i<iend; i++)      
-//          for(j=jstart; j<jend; j++)    {  
-//            dataR[m][i][j]=D->RhoNoPairR[m][i][j]+D->RhoPairR[m][i][j]; 
-//            dataI[m][i][j]=D->RhoNoPairI[m][i][j]+D->RhoPairI[m][i][j]; 
-//          }
       sprintf(dataName,"R");
       saveFieldComp(dataR,name,dataName,nx,ny,nxSub,nySub,istart,iend,jstart,jend,numMode,offset);
-//      saveFieldComp(D->RhoIonR,name,dataName,nx,ny,nxSub,nySub,istart,iend,jstart,jend,numMode,offset);
-//      MPI_Barrier(MPI_COMM_WORLD);
-//      for(m=0; m<numMode; m++)      
-//        for(i=istart; i<iend; i++)      
-//          for(j=jstart; j<jend; j++)      
-//            data[m][i][j]=D->RhoElcI[m][i][j]*rho0[s]; 
       sprintf(dataName,"I");
       saveFieldComp(dataI,name,dataName,nx,ny,nxSub,nySub,istart,iend,jstart,jend,numMode,offset);
 

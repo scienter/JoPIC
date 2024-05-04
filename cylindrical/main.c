@@ -176,9 +176,6 @@ int main(int argc, char *argv[])
   	  	fieldSolve2(D,t,iteration);
   	  	//if(myrank==0) printf("fieldSolve2,iteration=%d\n",iteration);
 		
-		filter_center(&D,D.EzR,D.EzNowR,iteration);
-		   
-
   	  	solveF(D);
   	  	//if(myrank==0) printf("solveF,iteration=%d\n",iteration);
 

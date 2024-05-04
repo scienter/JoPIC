@@ -67,8 +67,6 @@ void parameterSetting(Domain *D,External *Ext, char *input)
    //Field Type
    if(FindParameters("Domain",1,"field_type",input,str)) D->fieldType=whatFieldType(str);
    else { printf("in [Domain], field_type=?  (Split/Yee/NoCherenkov)\n"); fail=1; }
-   if(FindParameters("Domain",1,"center_compensation",input,str)) D->cenComp=atof(str);
-   else D->cenComp=1.0;
    if(FindParameters("Domain",1,"mode_number",input,str)) 
      D->numMode=atoi(str);
    else  {
@@ -79,43 +77,20 @@ void parameterSetting(Domain *D,External *Ext, char *input)
    else  D->dF=0.0;
 
 	//low pass filter
-	if(FindParameters("Domain",1,"filter",input,str)) D->filter=whatONOFF(str); else D->filter=OFF;
 	switch (D->fieldType) {		// For only laser axis grids
 	case Yee :
    	if(FindParameters("Domain",1,"filter_Er",input,str)) D->filterEr=whatONOFF(str); else D->filterEr=OFF;
 	  if(FindParameters("Domain",1,"filter_Ep",input,str)) D->filterEp=whatONOFF(str); else D->filterEp=OFF;
-   	if(FindParameters("Domain",1,"filter_Ez",input,str)) D->filterEz=whatONOFF(str); else D->filterEz=OFF;
 	  if(FindParameters("Domain",1,"filter_Br",input,str)) D->filterBr=whatONOFF(str); else D->filterBr=OFF;
 	  if(FindParameters("Domain",1,"filter_Bp",input,str)) D->filterBr=whatONOFF(str); else D->filterBp=OFF;
-   	if(FindParameters("Domain",1,"filter_Bz",input,str)) D->filterBz=whatONOFF(str); else D->filterBz=OFF;
 		break;
 	case Split :
 		if(FindParameters("Domain",1,"filter_Pr",input,str)) D->filterPr=whatONOFF(str); else D->filterPr=OFF;
 	  if(FindParameters("Domain",1,"filter_Pl",input,str)) D->filterPl=whatONOFF(str); else D->filterPl=OFF;
-   	if(FindParameters("Domain",1,"filter_Ez",input,str)) D->filterEz=whatONOFF(str); else D->filterEz=OFF;
 	  if(FindParameters("Domain",1,"filter_Sr",input,str)) D->filterSr=whatONOFF(str); else D->filterSr=OFF;
 	  if(FindParameters("Domain",1,"filter_Sl",input,str)) D->filterSl=whatONOFF(str); else D->filterSl=OFF;
-   	if(FindParameters("Domain",1,"filter_Bz",input,str)) D->filterBz=whatONOFF(str); else D->filterBz=OFF;
 		break;
 	}
-  if(FindParameters("Domain",1,"filter_iteration",input,str)) D->filterIter=atoi(str); else D->filterIter=1e5;
-  if(D->filterIter==0) D->filterIter=1e5; else ;
-  if(FindParameters("Domain",1,"filter_Jr",input,str)) D->filterJr=whatONOFF(str); else D->filterJr=OFF;
-  if(FindParameters("Domain",1,"filter_Jp",input,str)) D->filterJp=whatONOFF(str); else D->filterJp=OFF;
-  if(FindParameters("Domain",1,"filter_Jz",input,str)) D->filterJz=whatONOFF(str); else D->filterJz=OFF;
-  if(FindParameters("Domain",1,"center_compensation_Ez",input,str)) D->compEz=whatONOFF(str); else D->compEz=OFF;
-  if(FindParameters("Domain",1,"center_compensation_Bz",input,str)) D->compBz=whatONOFF(str); else D->compBz=OFF;
-  if(FindParameters("Domain",1,"center_compensation_Pr",input,str)) D->compPr=whatONOFF(str); else D->compPr=OFF;
-  if(FindParameters("Domain",1,"center_compensation_Pl",input,str)) D->compPl=whatONOFF(str); else D->compPl=OFF;
-  if(FindParameters("Domain",1,"center_compensation_Sr",input,str)) D->compSr=whatONOFF(str); else D->compSr=OFF;
-  if(FindParameters("Domain",1,"center_compensation_Sl",input,str)) D->compSl=whatONOFF(str); else D->compSl=OFF;
-  if(FindParameters("Domain",1,"center_compensation_Jz",input,str)) D->compJz=whatONOFF(str); else D->compJz=OFF;
-  if(FindParameters("Domain",1,"center_compensation_Jr",input,str)) D->compJr=whatONOFF(str); else D->compJr=OFF;
-  if(FindParameters("Domain",1,"center_compensation_Jp",input,str)) D->compJp=whatONOFF(str); else D->compJp=OFF;
-  if(FindParameters("Domain",1,"center_compensation_Er",input,str)) D->compEr=whatONOFF(str); else D->compEr=OFF;
-  if(FindParameters("Domain",1,"center_compensation_Br",input,str)) D->compBr=whatONOFF(str); else D->compBr=OFF;  
-  if(FindParameters("Domain",1,"center_compensation_Ep",input,str)) D->compEp=whatONOFF(str); else D->compEp=OFF;
-  if(FindParameters("Domain",1,"center_compensation_Bp",input,str)) D->compBp=whatONOFF(str); else D->compBp=OFF;  
 
   //Current Type
   if(FindParameters("Domain",1,"current_order",input,str)) D->currentType=atoi(str);

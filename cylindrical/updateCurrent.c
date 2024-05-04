@@ -32,13 +32,11 @@ void MPI_Transfer6F_Xplus(Domain *D,double ***f1,double ***f2,double ***f3,doubl
 
 void updateCurrent(Domain D,int iteration)
 {
-  	double cenComp;
-  	int nxSub,nySub,i,j,n,iter,m,iend,numMode;
+  	int nxSub,nySub,i,j,n,m,iend,numMode;
   	int nSpecies;
 
   	nxSub=D.nxSub+5;  nySub=D.nySub+5;
   	nSpecies=D.nSpecies;
-  	iter=D.filterIter;
   	if(D.boostOn==ON && D.boostIon==OFF)
   	  	nSpecies=1;    
 
@@ -87,46 +85,7 @@ void updateCurrent(Domain D,int iteration)
    D.JrI=D.shareF[3];
    D.JpR=D.shareF[4];
    D.JpI=D.shareF[5];
-   // if(D.L>1) {
-   //   MPI_TransferJ_Xplus(&D,D.JzR,D.JzI,D.JrR,D.JrI,D.JpR,D.JpI,nySub,3);
-   //   MPI_TransferJ_Xminus(&D,D.JzR,D.JzI,D.JrR,D.JrI,D.JpR,D.JpI,nySub,3);
-   //   if(D.Period==ON)       MPI_TransferJ_Period_X(&D,D.JzR,D.JzI,D.JrR,D.JrI,D.JpR,D.JpI,nySub,3);
-	//   MPI_Transfer6F_Xplus(&D,D.JzR,D.JzI,D.JrR,D.JrI,D.JpR,D.JpI,nySub,3);  
-   // }
     
-	cenComp=D.cenComp;
-	j=D.jstart;
-   if(D.compJz==ON) {
-     	m=0;
-	 		for(i=0; i<iend+3; i++) 
-         	D.JzR[m][i][j]=(1.0-cenComp)*D.JzR[m][i][j+2]+cenComp*D.JzR[m][i][j];   
-	   for(m=1; m<numMode; m++) 
-	 	  	for(i=0; i<iend+3; i++) {
-         	D.JzR[m][i][j]=(1.0-cenComp)*D.JzR[m][i][j+2]+cenComp*D.JzR[m][i][j];   	  	  
-         	D.JzI[m][i][j]=(1.0-cenComp)*D.JzI[m][i][j+2]+cenComp*D.JzI[m][i][j];   	          
-       	}
-   }
-   if(D.compJr==ON) {
-     	m=0;
-	 	  	for(i=0; i<iend+3; i++) 
-         	D.JrR[m][i][j]=(1.0-cenComp)*D.JrR[m][i][j+2]+cenComp*D.JrR[m][i][j];              
-	   for(m=1; m<numMode; m++) 
-	 	  	for(i=0; i<iend+3; i++) {
-         	D.JrR[m][i][j]=(1.0-cenComp)*D.JrR[m][i][j+2]+cenComp*D.JrR[m][i][j];   	  	  
-         	D.JrI[m][i][j]=(1.0-cenComp)*D.JrI[m][i][j+2]+cenComp*D.JrI[m][i][j];             
-	 	  	}
-   }
-   if(D.compJp==ON) {
-     	m=0;
-	 	  	for(i=0; i<iend+3; i++) 
-         	D.JpR[m][i][j]=(1.0-cenComp)*D.JpR[m][i][j+2]+cenComp*D.JpR[m][i][j];              
-	   for(m=1; m<numMode; m++) 
-	 	  	for(i=0; i<iend+3; i++) {
-         	D.JpR[m][i][j]=(1.0-cenComp)*D.JpR[m][i][j+2]+cenComp*D.JpR[m][i][j];   	  	  
-         	D.JpI[m][i][j]=(1.0-cenComp)*D.JpI[m][i][j+2]+cenComp*D.JpI[m][i][j];             
-	 	  	}
-   }   
-
 }
 
 

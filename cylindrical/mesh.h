@@ -32,17 +32,13 @@
 typedef struct _Domain 
 {
    int dimension;
-   int filter,filterIter;
-	int filterEr,filterEp,filterEz,filterBr,filterBp,filterBz;
-	int filterPr,filterPl,filterSr,filterSl,filterF;
-	int filterJr,filterJp,filterJz;
-   int compEz,compBz,compPr,compPl,compSr,compSl,compJz,compJr,compJp,compEr,compEp,compBr,compBp;
+	int filterEr,filterEp,filterBr,filterBp;
+	int filterPr,filterPl,filterSr,filterSl;
 	int consCheck;
 
    int fieldType;
    int currentType,currentCons;
    int interpolationType;
-   double cenComp;
 
    int maxTime;
    int saveFieldMode;
@@ -292,7 +288,6 @@ void solveF(Domain D);
 void solveCharge(Domain *D,LoadList *LL,double ***rhoR,double ***rhoI,int istart,int iend,int jstart,int jend,int s,double coef);
 void movingPairCharge(Domain *D);
 void filter(Domain *D,double ***dataR,double ***dataI);
-void filter_center(Domain *D,double ***dataR,double ***dataI,int iteration);
 void filterFieldC(Domain *D);
 void ionizationSetup(LoadList *LL,int species);
 void fieldIonization(Domain *D,int iteration);
