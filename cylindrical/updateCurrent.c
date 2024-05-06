@@ -241,8 +241,6 @@ void updateCurrent_Split_umeda(Domain *D,int nSpecies,int iteration)
 		   	            }
 		   	            Wz1[1]=posZ1-gridI; Wz1[0]=1.0-Wz1[1];
 		   	            Wz2[1]=posZ2-gridI; Wz2[0]=1.0-Wz2[1];
-		   	            //Wr1[0]=((gridJ+1.0)*(gridJ+1.0)-posR1*posR1)/(2.0*gridJ+1.0); Wr1[1]=1.0-Wr1[0];
-		   	            //Wr2[0]=((gridJ+1.0)*(gridJ+1.0)-posR2*posR2)/(2.0*gridJ+1.0); Wr2[1]=1.0-Wr2[0];
 		   	            Wr1[0]=(gridJ+posR1)*(1.0-(posR1-gridJ))/(2.0*posR1); Wr1[1]=1.0-Wr1[0];
 		   	            Wr2[0]=(gridJ+posR2)*(1.0-(posR2-gridJ))/(2.0*posR2); Wr2[1]=1.0-Wr2[0];
    	   	   	      for(m=1; m<numMode; m++)  
@@ -356,7 +354,6 @@ void updateCurrent_Split_umeda(Domain *D,int nSpecies,int iteration)
 				   	posY1=dataY[n]; posY2=dataY[n+1];
 				   	rc=0.5*(posR1+posR2);     zc=0.5*(posZ1+posZ2);
                   
-				   	//Wr[0]=((gridJ+1.0)*(gridJ+1.0)-rc*rc)/(2.0*gridJ+1.0); 
 						if(rc<0.5)      Wr[0]=(rc*rc-rc+0.5)/(2.0*rc*rc+0.5);
 						else if(rc>=1)  Wr[0]=(gridJ+rc)*(1-(rc-gridJ))/(2.0*rc); 
 						else            Wr[0]=(1.0-rc)*0.5;
@@ -429,9 +426,6 @@ void updateCurrent_Split_umeda(Domain *D,int nSpecies,int iteration)
 				   	   }
 				   	   Wz1[1]=posZ1-gridI; Wz1[0]=1.0-Wz1[1];
 				   	   Wz2[1]=posZ2-gridI; Wz2[0]=1.0-Wz2[1];
-				   	   //Wr1[0]=((gridJ+1.0)*(gridJ+1.0)-posR1*posR1)/(2.0*gridJ+1.0); Wr1[1]=1.0-Wr1[0];
-				   	   //Wr2[0]=((gridJ+1.0)*(gridJ+1.0)-posR2*posR2)/(2.0*gridJ+1.0); Wr2[1]=1.0-Wr2[0];
-		   	         //Wr1[0]=(gridJ+posR1)*(1.0-(posR1-gridJ))/(2.0*posR1); 
 						   if(posR1<0.5)      Wr1[0]=(posR1*posR1-posR1+0.5)/(2.0*posR1*posR1+0.5);
 						   else if(posR1>=1)  Wr1[0]=(gridJ+posR1)*(1-(posR1-gridJ))/(2.0*posR1); 
 						   else               Wr1[0]=(1.0-posR1)*0.5;
@@ -547,7 +541,7 @@ void updateCurrent_Yee_umeda(Domain *D,int nSpecies,int iteration)
   int nxSub,nySub,jjstart;
   double oldZ,oldR,weight,gamma;
   double x1,x2,y1,y2,z1,z2,r1,r2,alpha;
-  double Fz,Fr,factor,factM;
+  double Fz,Fr,factor[2],factM;
   double Wz[2],Wr[2],Wz1[2],Wz2[2],Wr1[2],Wr2[2];
   double tmpZ[2],tmpR[2],tmpP[2][2];
   double vp,xr,yr,zr,rr,xc,yc,zc,rc,vx,vy,v;
@@ -590,15 +584,15 @@ void updateCurrent_Yee_umeda(Domain *D,int nSpecies,int iteration)
   //initialize J
 	if(D->fieldIonization==OFF) {
 		for(m=0; m<numMode; m++)
-      for(i=0; i<nxSub+5; i++)
-       	for(j=0; j<nySub+5; j++)   {
-          D->JzR[m][i][j]=0.0;
-				  D->JrR[m][i][j]=0.0;
-				  D->JpR[m][i][j]=0.0;
-				  D->JzI[m][i][j]=0.0;
-				  D->JrI[m][i][j]=0.0;
-				  D->JpI[m][i][j]=0.0;
-			  }
+         for(i=0; i<nxSub+5; i++)
+       	   for(j=0; j<nySub+5; j++)   {
+               D->JzR[m][i][j]=0.0;
+				   D->JrR[m][i][j]=0.0;
+				   D->JpR[m][i][j]=0.0;
+				   D->JzI[m][i][j]=0.0;
+				   D->JrI[m][i][j]=0.0;
+				   D->JpI[m][i][j]=0.0;
+			   }
 	} else ;
 
   alpha=2.0; 
@@ -627,96 +621,97 @@ void updateCurrent_Yee_umeda(Domain *D,int nSpecies,int iteration)
           xr=x1; yr=y1;
           calculaionRally(&xr,&yr,rr,x1,x2,y1,y2,r1,r2,iteration);
 
-			    dataX[0]=x1; dataY[0]=y1; dataR[0]=r1; dataZ[0]=z1;
-			    dataX[1]=xr; dataY[1]=yr; dataR[1]=rr; dataZ[1]=zr;
-			    dataX[2]=x2; dataY[2]=y2; dataR[2]=r2; dataZ[2]=z2;
-			    dataI[0]=i1; dataJ[0]=j1;
-			    dataI[1]=i2; dataJ[1]=j2;
+		    dataX[0]=x1; dataY[0]=y1; dataR[0]=r1; dataZ[0]=z1;
+		    dataX[1]=xr; dataY[1]=yr; dataR[1]=rr; dataZ[1]=zr;
+		    dataX[2]=x2; dataY[2]=y2; dataR[2]=r2; dataZ[2]=z2;
+		    dataI[0]=i1; dataJ[0]=j1;
+		    dataI[1]=i2; dataJ[1]=j2;
 
-			    for(n=0; n<2; n++)  {
-				    gridI=dataI[n]; gridJ=dataJ[n];
-				    posR1=dataR[n]; posR2=dataR[n+1];
-				    posZ1=dataZ[n]; posZ2=dataZ[n+1];
-				    posX1=dataX[n]; posX2=dataX[n+1];
-				    posY1=dataY[n]; posY2=dataY[n+1];
-				    rc=0.5*(posR1+posR2);     zc=0.5*(posZ1+posZ2);
+		    for(n=0; n<2; n++)  {
+			    gridI=dataI[n]; gridJ=dataJ[n];
+			    posR1=dataR[n]; posR2=dataR[n+1];
+			    posZ1=dataZ[n]; posZ2=dataZ[n+1];
+			    posX1=dataX[n]; posX2=dataX[n+1];
+			    posY1=dataY[n]; posY2=dataY[n+1];
+			    rc=0.5*(posR1+posR2);     zc=0.5*(posZ1+posZ2);
+             Wr[0]=(gridJ+rc)*(1.0-(rc-gridJ))/(2.0*rc);
+             Wr[1]=1.0-Wr[0];
+   		    Wz[1]=zc-gridI;        Wz[0]=1.0-Wz[1];
 
-				    Wr[0]=((gridJ+1.0)*(gridJ+1.0)-rc*rc)/(2.0*gridJ+1.0); Wr[1]=1.0-Wr[0];
-				    Wz[1]=zc-gridI;        Wz[0]=1.0-Wz[1];
-
-				    xc=posX1; yc=posY1;
-				    calculaionRally(&xc,&yc,rc,posX1,posX2,posY1,posY2,posR1,posR2,iteration);
-				    coss[1]=xc/rc; sins[1]=yc/rc;				
-				    for(m=2; m<numMode; m++) {
-				      coss[m]=coss[m-1]*coss[1]-sins[m-1]*sins[1];
-				      sins[m]=sins[m-1]*coss[1]+coss[m-1]*sins[1];
+			    xc=posX1; yc=posY1;
+			    calculaionRally(&xc,&yc,rc,posX1,posX2,posY1,posY2,posR1,posR2,iteration);
+			    coss[1]=xc/rc; sins[1]=yc/rc;				
+			    for(m=2; m<numMode; m++) {
+			       coss[m]=coss[m-1]*coss[1]-sins[m-1]*sins[1];
+			       sins[m]=sins[m-1]*coss[1]+coss[m-1]*sins[1];
+	          }
+             factor[0]=weight*coeff[s]/(2.0*gridJ+1.0);
+			    Fr=(posR2-posR1)*drBydt;
+			    tmpR[0]=Fr*Wz[0]*factor[0];
+			    tmpR[1]=Fr*Wz[1]*factor[0];
+			    for(ii=0; ii<2; ii++)
+				    D->JrR[0][ii+gridI][gridJ+jstart]+=tmpR[ii];
+				 for(m=1; m<numMode; m++)  
+				    for(ii=0; ii<2; ii++) {
+				       D->JrR[m][ii+gridI][gridJ+jstart]+=tmpR[ii]*coss[m]*alpha;
+				    	 D->JrI[m][ii+gridI][gridJ+jstart]-=tmpR[ii]*sins[m]*alpha;
 				    }
-				    factor=weight*coeff[s]/(2.0*rc);
 
-				    Fr=(posR2-posR1)*drBydt;
-				    tmpR[0]=Fr*Wz[0]*factor;
-				    tmpR[1]=Fr*Wz[1]*factor;
-				    for(ii=0; ii<2; ii++)
-				      D->JrR[0][ii+gridI][gridJ+jstart]+=tmpR[ii];
+             factor[0]=weight*coeff[s]/(2.0*gridJ);
+             factor[1]=weight*coeff[s]/(2.0*(gridJ+1));
+				 //Jp
+				 vp=coss[1]*(posY2-posY1)*drBydt-sins[1]*(posX2-posX1)*drBydt;
+				 tmpP[0][0]=Wz[0]*Wr[0]*factor[0]*vp;
+			    tmpP[1][0]=Wz[1]*Wr[0]*factor[0]*vp;
+			    tmpP[0][1]=Wz[0]*Wr[1]*factor[1]*vp;
+			    tmpP[1][1]=Wz[1]*Wr[1]*factor[1]*vp;
+			    for(ii=0; ii<2; ii++)
+                for(jj=0; jj<2; jj++)
+			          D->JpR[0][gridI+ii][gridJ+jj+jstart]+=tmpP[ii][jj];
+  				 if(D->currentCons==Lifschitz) {
 				    for(m=1; m<numMode; m++)  
-				      for(ii=0; ii<2; ii++) {
-				    		D->JrR[m][ii+gridI][gridJ+jstart]+=tmpR[ii]*coss[m]*alpha;
-				    		D->JrI[m][ii+gridI][gridJ+jstart]-=tmpR[ii]*sins[m]*alpha;
-				      }
+				       for(ii=0; ii<2; ii++) 
+				          for(jj=0; jj<2; jj++) {
+				    	       D->JpR[m][gridI+ii][jj+gridJ+jstart]+=tmpP[ii][jj]*coss[m]*alpha;
+				    		    D->JpI[m][gridI+ii][jj+gridJ+jstart]-=tmpP[ii][jj]*sins[m]*alpha;
+				    		 }
+				 } else if(D->currentCons==Davidson) {
+				    cos1[1]=posX1/posR1; sin1[1]=posY1/posR1;
+				    for(m=2; m<numMode; m++) {
+				       cos1[m]=cos1[m-1]*cos1[1]-sin1[m-1]*sin1[1];
+				    	 sin1[m]=sin1[m-1]*cos1[1]+cos1[m-1]*sin1[1];
+				    }
+				    cos2[1]=posX2/posR2; sin2[1]=posY2/posR2;
+				    for(m=2; m<numMode; m++) {
+				       cos2[m]=cos2[m-1]*cos2[1]-sin2[m-1]*sin2[1];
+				    	 sin2[m]=sin2[m-1]*cos2[1]+cos2[m-1]*sin2[1];
+				    }
+				    Wz1[1]=posZ1-gridI; Wz1[0]=1.0-Wz1[1];
+				    Wz2[1]=posZ2-gridI; Wz2[0]=1.0-Wz2[1];
+                Wr1[0]=(gridJ+posR1)*(1.0-(posR1-gridJ))/(2.0*posR1); Wr1[1]=1.0-Wr1[0];
+                Wr2[0]=(gridJ+posR2)*(1.0-(posR2-gridJ))/(2.0*posR2); Wr2[1]=1.0-Wr2[0]; 
+                for(m=1; m<numMode; m++)  
+			          for(ii=0; ii<2; ii++) 
+				    	    for(jj=0; jj<2; jj++)  {
+				    	       factM=alpha*(gridJ+jj)/(m*1.0)*drBydt*factor[jj];
+				    	    	 D->JpR[m][ii+gridI][jj+gridJ+jstart]+=factM*(Wz2[ii]*Wr2[jj]*(sin2[m]-sins[m])-Wz1[ii]*Wr1[jj]*(sin1[m]-sins[m]));
+				    	    	 D->JpI[m][ii+gridI][jj+gridJ+jstart]+=factM*(Wz2[ii]*Wr2[jj]*(cos2[m]-coss[m])-Wz1[ii]*Wr1[jj]*(cos1[m]-coss[m]));
+				    	    }
+				 }
 
-				    //Jp
-				    vp=coss[1]*(posY2-posY1)*drBydt-sins[1]*(posX2-posX1)*drBydt;
-				    tmpP[0][0]=Wz[0]*Wr[0]*factor*vp;
-				    tmpP[1][0]=Wz[1]*Wr[0]*factor*vp;
-				    tmpP[0][1]=Wz[0]*Wr[1]*factor*vp;
-				    tmpP[1][1]=Wz[1]*Wr[1]*factor*vp;
-				    for(ii=0; ii<2; ii++)
-				      for(jj=0; jj<2; jj++)
-				    		D->JpR[0][gridI+ii][gridJ+jj+jstart]+=tmpP[ii][jj];
-  					    if(D->currentCons==Lifschitz) {
-				          for(m=1; m<numMode; m++)  
-				    		    for(ii=0; ii<2; ii++) 
-				    			    for(jj=0; jj<2; jj++) {
-				    				    D->JpR[m][gridI+ii][jj+gridJ+jstart]+=tmpP[ii][jj]*coss[m]*alpha;
-				    				    D->JpI[m][gridI+ii][jj+gridJ+jstart]-=tmpP[ii][jj]*sins[m]*alpha;
-				    			    }
-				        } else if(D->currentCons==Davidson) {
-				          cos1[1]=posX1/posR1; sin1[1]=posY1/posR1;
-				          for(m=2; m<numMode; m++) {
-				    		    cos1[m]=cos1[m-1]*cos1[1]-sin1[m-1]*sin1[1];
-				    		    sin1[m]=sin1[m-1]*cos1[1]+cos1[m-1]*sin1[1];
-				          }
-				          cos2[1]=posX2/posR2; sin2[1]=posY2/posR2;
-				          for(m=2; m<numMode; m++) {
-				    	    	cos2[m]=cos2[m-1]*cos2[1]-sin2[m-1]*sin2[1];
-				    	    	sin2[m]=sin2[m-1]*cos2[1]+cos2[m-1]*sin2[1];
-				          }
-				          Wz1[1]=posZ1-gridI; Wz1[0]=1.0-Wz1[1];
-				          Wz2[1]=posZ2-gridI; Wz2[0]=1.0-Wz2[1];
-				          Wr1[0]=((gridJ+1.0)*(gridJ+1.0)-posR1*posR1)/(2.0*gridJ+1.0); Wr1[1]=1.0-Wr1[0];
-				          Wr2[0]=((gridJ+1.0)*(gridJ+1.0)-posR2*posR2)/(2.0*gridJ+1.0); Wr2[1]=1.0-Wr2[0];
-  					      for(m=1; m<numMode; m++)  
-				    	    	for(ii=0; ii<2; ii++) 
-				    	    		for(jj=0; jj<2; jj++)  {
-				    	    		  factM=alpha*(gridJ+jj)/(m*1.0)*drBydt*factor;
-				    	    		  D->JpR[m][ii+gridI][jj+gridJ+jstart]+=factM*(Wz2[ii]*Wr2[jj]*(sin2[m]-sins[m])-Wz1[ii]*Wr1[jj]*(sin1[m]-sins[m]));
-				    	    		  D->JpI[m][ii+gridI][jj+gridJ+jstart]+=factM*(Wz2[ii]*Wr2[jj]*(cos2[m]-coss[m])-Wz1[ii]*Wr1[jj]*(cos1[m]-coss[m]));
-				    	    		}
-				        }
+             //Jz
+  	          Fz=(posZ2-posZ1)*dzBydt;
+			    tmpZ[0]=Fz*Wr[0]*factor[0];
+			    tmpZ[1]=Fz*Wr[1]*factor[1];
+             for(jj=0; jj<2; jj++)
+			       D->JzR[0][gridI][jj+gridJ+jstart]+=tmpZ[jj];
+			    for(m=1; m<numMode; m++) 
+			       for(jj=0; jj<2; jj++) {
+			    	    D->JzR[m][gridI][jj+gridJ+jstart]+=tmpZ[jj]*coss[m]*alpha;
+			    		 D->JzI[m][gridI][jj+gridJ+jstart]-=tmpZ[jj]*sins[m]*alpha;
+			    	 }
 
-            //Jz
-  	        Fz=(posZ2-posZ1)*dzBydt;
-			    	tmpZ[0]=Fz*Wr[0]*factor;
-			    	tmpZ[1]=Fz*Wr[1]*factor;
-			    	for(jj=0; jj<2; jj++)
-			    	  D->JzR[0][gridI][jj+gridJ+jstart]+=tmpZ[jj];
-			    	for(m=1; m<numMode; m++) 
-			    	  for(jj=0; jj<2; jj++) {
-			    			D->JzR[m][gridI][jj+gridJ+jstart]+=tmpZ[jj]*coss[m]*alpha;
-			    			D->JzI[m][gridI][jj+gridJ+jstart]-=tmpZ[jj]*sins[m]*alpha;
-			    	  }
-
-			    }     
+			 }     
 
           p=p->next;
         }    //End of while(p)
@@ -726,143 +721,162 @@ void updateCurrent_Yee_umeda(Domain *D,int nSpecies,int iteration)
 	 
   //-------------- for Axis -------------------------
   for(i=istart; i<iend; i++)
-    for(j=jstart; j<jstart+2; j++)
-      for(s=0; s<nSpecies; s++)
-      {
-        p=particle[i][j].head[s]->pt;
-        while(p)
+     for(j=jstart; j<jstart+2; j++)
+        for(s=0; s<nSpecies; s++)
         {
-          weight=p->weight*p->charge;
-          gamma=sqrt(1.0+p->pz*p->pz+p->px*p->px+p->py*p->py);
+           p=particle[i][j].head[s]->pt;
+           while(p)
+           {
+              weight=p->weight*p->charge;
+              gamma=sqrt(1.0+p->pz*p->pz+p->px*p->px+p->py*p->py);
 
-          //------------------ Jr, Jp -------------------
-          x1=p->oldX; y1=p->oldY; r1=sqrt(x1*x1+y1*y1);
-          x2=p->x;    y2=p->y;    r2=sqrt(x2*x2+y2*y2);
-          z2=p->z+i;  z1=p->oldZ;
+              //------------------ Jr, Jp -------------------
+              x1=p->oldX; y1=p->oldY; r1=sqrt(x1*x1+y1*y1);
+              x2=p->x;    y2=p->y;    r2=sqrt(x2*x2+y2*y2);
+              z2=p->z+i;  z1=p->oldZ;
 
-          i1=(int)z1;           j1=(int)r1;
-          i2=(int)z2;           j2=(int)r2;
+              i1=(int)z1;           j1=(int)r1;
+              i2=(int)z2;           j2=(int)r2;
 
-          //rally calculation
-          if(i1==i2)       zr=0.5*(z1+z2);
-          else             zr=maximum(i1*1.0,i2*1.0);
-          if(j1==j2)       rr=0.5*(r1+r2);
-          else             rr=maximum(j1*1.0,j2*1.0);
+              //rally calculation
+              if(i1==i2)       zr=0.5*(z1+z2);
+              else             zr=maximum(i1*1.0,i2*1.0);
+              if(j1==j2)       rr=0.5*(r1+r2);
+              else             rr=maximum(j1*1.0,j2*1.0);
 
-			 xr=x1; yr=y1;
-          calculaionRally(&xr,&yr,rr,x1,x2,y1,y2,r1,r2,iteration);
+			     xr=x1; yr=y1;
+              calculaionRally(&xr,&yr,rr,x1,x2,y1,y2,r1,r2,iteration);
 
-			 dataX[0]=x1; dataY[0]=y1; dataR[0]=r1; dataZ[0]=z1;
-			 dataX[1]=xr; dataY[1]=yr; dataR[1]=rr; dataZ[1]=zr;
-			 dataX[2]=x2; dataY[2]=y2; dataR[2]=r2; dataZ[2]=z2;
-			 dataI[0]=i1; dataJ[0]=j1;
-			 dataI[1]=i2; dataJ[1]=j2;
+			     dataX[0]=x1; dataY[0]=y1; dataR[0]=r1; dataZ[0]=z1;
+			     dataX[1]=xr; dataY[1]=yr; dataR[1]=rr; dataZ[1]=zr;
+			     dataX[2]=x2; dataY[2]=y2; dataR[2]=r2; dataZ[2]=z2;
+			     dataI[0]=i1; dataJ[0]=j1;
+			     dataI[1]=i2; dataJ[1]=j2;
 
-			 for(n=0; n<2; n++)  {
-			   gridI=dataI[n]; gridJ=dataJ[n];
-			   posR1=dataR[n]; posR2=dataR[n+1];
-			   posZ1=dataZ[n]; posZ2=dataZ[n+1];
-			   posX1=dataX[n]; posX2=dataX[n+1];
-			   posY1=dataY[n]; posY2=dataY[n+1];
-			   rc=0.5*(posR1+posR2);     zc=0.5*(posZ1+posZ2);
+			     for(n=0; n<2; n++)  {
+			        gridI=dataI[n]; gridJ=dataJ[n];
+			        posR1=dataR[n]; posR2=dataR[n+1];
+			        posZ1=dataZ[n]; posZ2=dataZ[n+1];
+			        posX1=dataX[n]; posX2=dataX[n+1];
+			        posY1=dataY[n]; posY2=dataY[n+1];
+			        rc=0.5*(posR1+posR2);     zc=0.5*(posZ1+posZ2);
 
-            Wr[0]=((gridJ+1.0)*(gridJ+1.0)-rc*rc)/(2.0*gridJ+1.0); Wr[1]=1.0-Wr[0];
-			   Wz[1]=zc-gridI;        Wz[0]=1.0-Wz[1];
-  			    xc=posX1; yc=posY1;
-				    calculaionRally(&xc,&yc,rc,posX1,posX2,posY1,posY2,posR1,posR2,iteration);
+                 if(rc<0.5)      Wr[0]=(rc*rc-rc+0.5)/(2.0*rc*rc+0.5);
+                 else if(rc>=1)  Wr[0]=(gridJ+rc)*(1-(rc-gridJ))/(2.0*rc);
+                 else            Wr[0]=(1.0-rc)*0.5;
+                 Wr[1]=1.0-Wr[0];
+			        Wz[1]=zc-gridI;        Wz[0]=1.0-Wz[1];
+  			    
+                 xc=posX1; yc=posY1;
+				     calculaionRally(&xc,&yc,rc,posX1,posX2,posY1,posY2,posR1,posR2,iteration);
 				    
-            coss[1]=xc/rc; sins[1]=yc/rc;				
-				    for(m=2; m<numMode; m++) {
-					    coss[m]=coss[m-1]*coss[1]-sins[m-1]*sins[1];
-					    sins[m]=sins[m-1]*coss[1]+coss[m-1]*sins[1];
-				    }
-  			    if(gridJ==0) {
-					    if(rc<0.5)	factor=weight*coeff[s]/((rc+0.5)*(rc+0.5));
-					    else			factor=weight*coeff[s]/(2.0*rc);
-					    jjstart=0;
-				    } else {
-					    factor=weight*coeff[s]/(2.0*rc);
-					    jjstart=0;
-				    }
+                 coss[1]=xc/rc; sins[1]=yc/rc;				
+				     for(m=2; m<numMode; m++) {
+					     coss[m]=coss[m-1]*coss[1]-sins[m-1]*sins[1];
+					     sins[m]=sins[m-1]*coss[1]+coss[m-1]*sins[1];
+				     }
 
-            // Jr
-				    Fr=(posR2-posR1)*drBydt;
-				    tmpR[0]=Fr*Wz[0]*factor;
-				    tmpR[1]=Fr*Wz[1]*factor;
-				    for(ii=0; ii<2; ii++)
-					    D->JrR[0][ii+gridI][gridJ+jstart]+=tmpR[ii];
-				    for(m=1; m<numMode; m++)  
-					    for(ii=0; ii<2; ii++) {
-							  D->JrR[m][ii+gridI][gridJ+jstart]+=tmpR[ii]*coss[m]*alpha;
+                 //Jr
+                 factor[0]=weight*coeff[s]/(2.0*gridJ+1);
+				     Fr=(posR2-posR1)*drBydt;
+				     tmpR[0]=Fr*Wz[0]*factor[0];
+				     tmpR[1]=Fr*Wz[1]*factor[0];
+				     for(ii=0; ii<2; ii++)
+					     D->JrR[0][ii+gridI][gridJ+jstart]+=tmpR[ii];
+				     for(m=1; m<numMode; m++)  
+					     for(ii=0; ii<2; ii++) {
+						     D->JrR[m][ii+gridI][gridJ+jstart]+=tmpR[ii]*coss[m]*alpha;
 							  D->JrI[m][ii+gridI][gridJ+jstart]-=tmpR[ii]*sins[m]*alpha;
-					    }
+					     }
 
-
+                if(gridJ==0) {
+                   factor[0]=weight*coeff[s]/(0.25);
+                   factor[1]=weight*coeff[s]/(2.0);
+                   jjstart=1;
+                } else {
+                   factor[0]=weight*coeff[s]/(2.0*gridJ);
+                   factor[1]=weight*coeff[s]/(2.0*(gridJ+1));
+                   jjstart=0;
+                }
 				    //Jp
 				    vp=coss[1]*(posY2-posY1)*drBydt-sins[1]*(posX2-posX1)*drBydt;
-				    tmpP[0][0]=Wz[0]*Wr[0]*factor*vp;
-				    tmpP[1][0]=Wz[1]*Wr[0]*factor*vp;
-				    tmpP[0][1]=Wz[0]*Wr[1]*factor*vp;
-				    tmpP[1][1]=Wz[1]*Wr[1]*factor*vp;
+				    tmpP[0][0]=Wz[0]*Wr[0]*factor[0]*vp;
+				    tmpP[1][0]=Wz[1]*Wr[0]*factor[0]*vp;
+				    tmpP[0][1]=Wz[0]*Wr[1]*factor[1]*vp;
+				    tmpP[1][1]=Wz[1]*Wr[1]*factor[1]*vp;
 				    for(ii=0; ii<2; ii++)
-				      for(jj=jjstart; jj<2; jj++)
-				    		D->JpR[0][gridI+ii][gridJ+jj+jstart]+=tmpP[ii][jj];
+				       for(jj=jjstart; jj<2; jj++)
+				    		 D->JpR[0][gridI+ii][gridJ+jj+jstart]+=tmpP[ii][jj];
 				    if(D->currentCons==Lifschitz) {
-				      m=1;  
-				    	  for(ii=0; ii<2; ii++) 
-				    			for(jj=0; jj<2; jj++) {
-				    				D->JpR[m][gridI+ii][jj+gridJ+jstart]+=tmpP[ii][jj]*coss[m]*alpha;
-				    				D->JpI[m][gridI+ii][jj+gridJ+jstart]-=tmpP[ii][jj]*sins[m]*alpha;
-				    			}
-				      for(m=2; m<numMode; m++)  
-				    		for(ii=0; ii<2; ii++) 
-				    			 for(jj=jjstart; jj<2; jj++) {
-				    				  D->JpR[m][gridI+ii][jj+gridJ+jstart]+=tmpP[ii][jj]*coss[m]*alpha;
-				    				  D->JpI[m][gridI+ii][jj+gridJ+jstart]-=tmpP[ii][jj]*sins[m]*alpha;
+				       m=1;  
+				    	 for(ii=0; ii<2; ii++) 
+				    	    for(jj=0; jj<2; jj++) {
+				    		    D->JpR[m][gridI+ii][jj+gridJ+jstart]+=tmpP[ii][jj]*coss[m]*alpha;
+				    			 D->JpI[m][gridI+ii][jj+gridJ+jstart]-=tmpP[ii][jj]*sins[m]*alpha;
+				    		 }
+				       for(m=2; m<numMode; m++)  
+				    	    for(ii=0; ii<2; ii++) 
+				    		    for(jj=jjstart; jj<2; jj++) {
+				    			    D->JpR[m][gridI+ii][jj+gridJ+jstart]+=tmpP[ii][jj]*coss[m]*alpha;
+				    				 D->JpI[m][gridI+ii][jj+gridJ+jstart]-=tmpP[ii][jj]*sins[m]*alpha;
 				    			 }
 				    } else if(D->currentCons==Davidson) {
-				      cos1[1]=posX1/posR1; sin1[1]=posY1/posR1;
-				      for(m=2; m<numMode; m++) {
-				    		cos1[m]=cos1[m-1]*cos1[1]-sin1[m-1]*sin1[1];
-				    		sin1[m]=sin1[m-1]*cos1[1]+cos1[m-1]*sin1[1];
-				      }
-				      cos2[1]=posX2/posR2; sin2[1]=posY2/posR2;
-				      for(m=2; m<numMode; m++) {
-				    		cos2[m]=cos2[m-1]*cos2[1]-sin2[m-1]*sin2[1];
-				    		sin2[m]=sin2[m-1]*cos2[1]+cos2[m-1]*sin2[1];
-				      }
-				      Wz1[1]=posZ1-gridI; Wz1[0]=1.0-Wz1[1];
-				      Wz2[1]=posZ2-gridI; Wz2[0]=1.0-Wz2[1];
-				      Wr1[0]=((gridJ+1.0)*(gridJ+1.0)-posR1*posR1)/(2.0*gridJ+1.0); Wr1[1]=1.0-Wr1[0];
-				      Wr2[0]=((gridJ+1.0)*(gridJ+1.0)-posR2*posR2)/(2.0*gridJ+1.0); Wr2[1]=1.0-Wr2[0];
+				       cos1[1]=posX1/posR1; sin1[1]=posY1/posR1;
+				       for(m=2; m<numMode; m++) {
+				    	    cos1[m]=cos1[m-1]*cos1[1]-sin1[m-1]*sin1[1];
+				    		 sin1[m]=sin1[m-1]*cos1[1]+cos1[m-1]*sin1[1];
+				       }
+				       cos2[1]=posX2/posR2; sin2[1]=posY2/posR2;
+				       for(m=2; m<numMode; m++) {
+				    		 cos2[m]=cos2[m-1]*cos2[1]-sin2[m-1]*sin2[1];
+				    		 sin2[m]=sin2[m-1]*cos2[1]+cos2[m-1]*sin2[1];
+				       }
+				       Wz1[1]=posZ1-gridI; Wz1[0]=1.0-Wz1[1];
+				       Wz2[1]=posZ2-gridI; Wz2[0]=1.0-Wz2[1];
+                   if(posR1<0.5)      Wr1[0]=(posR1*posR1-posR1+0.5)/(2.0*posR1*posR1+0.5);
+                   else if(posR1>=1)  Wr1[0]=(gridJ+posR1)*(1-(posR1-gridJ))/(2.0*posR1);
+                   else               Wr1[0]=(1.0-posR1)*0.5;
+                   Wr1[1]=1.0-Wr1[0];
 
-						  for(m=1; m<numMode; m++)  
-								for(ii=0; ii<2; ii++) 
-									 for(jj=jjstart; jj<2; jj++)  {
-										  factM=alpha*(gridJ+jj)/(m*1.0)*drBydt*factor;
-										  D->JpR[m][ii+gridI][jj+gridJ+jstart]+=factM*(Wz2[ii]*Wr2[jj]*(sin2[m]-sins[m])-Wz1[ii]*Wr1[jj]*(sin1[m]-sins[m]));
-										  D->JpI[m][ii+gridI][jj+gridJ+jstart]+=factM*(Wz2[ii]*Wr2[jj]*(cos2[m]-coss[m])-Wz1[ii]*Wr1[jj]*(cos1[m]-coss[m]));
-									 }
-            }
+                   if(posR2<0.5)      Wr2[0]=(posR2*posR2-posR2+0.5)/(2.0*posR2*posR2+0.5);
+                   else if(posR2>=1)  Wr2[0]=(gridJ+posR2)*(1-(posR2-gridJ))/(2.0*posR2);
+                   else               Wr2[0]=(1.0-posR2)*0.5;
+                   Wr2[1]=1.0-Wr2[0];
+						 
+                   m=1;
+						    for(ii=0; ii<2; ii++) 
+							    for(jj=jjstart; jj<2; jj++)  {
+								    factM=alpha*(gridJ+jj)/(m*1.0)*drBydt*factor[jj];
+									 D->JpR[m][ii+gridI][jj+gridJ+jstart]+=factM*(Wz2[ii]*Wr2[jj]*(sin2[m]-sins[m])-Wz1[ii]*Wr1[jj]*(sin1[m]-sins[m]));
+									 D->JpI[m][ii+gridI][jj+gridJ+jstart]+=factM*(Wz2[ii]*Wr2[jj]*(cos2[m]-coss[m])-Wz1[ii]*Wr1[jj]*(cos1[m]-coss[m]));
+								 }
+						 for(m=2; m<numMode; m++)  
+						    for(ii=0; ii<2; ii++) 
+							    for(jj=jjstart; jj<2; jj++)  {
+								    factM=alpha*(gridJ+jj)/(m*1.0)*drBydt*factor[jj];
+									 D->JpR[m][ii+gridI][jj+gridJ+jstart]+=factM*(Wz2[ii]*Wr2[jj]*(sin2[m]-sins[m])-Wz1[ii]*Wr1[jj]*(sin1[m]-sins[m]));
+									 D->JpI[m][ii+gridI][jj+gridJ+jstart]+=factM*(Wz2[ii]*Wr2[jj]*(cos2[m]-coss[m])-Wz1[ii]*Wr1[jj]*(cos1[m]-coss[m]));
+								 }
+                }      
 					  
-            // Jz
-	          Fz=(posZ2-posZ1)*dzBydt;
-					  tmpZ[0]=Fz*Wr[0]*factor;
-					  tmpZ[1]=Fz*Wr[1]*factor;
-					  for(jj=0; jj<2; jj++)
-						  D->JzR[0][gridI][jj+gridJ+jstart]+=tmpZ[jj];
-					  for(m=1; m<numMode; m++) 
-						  for(jj=jjstart; jj<2; jj++) {
-								D->JzR[m][gridI][jj+gridJ+jstart]+=tmpZ[jj]*coss[m]*alpha;
-								D->JzI[m][gridI][jj+gridJ+jstart]-=tmpZ[jj]*sins[m]*alpha;
-						  }
+                // Jz
+	             Fz=(posZ2-posZ1)*dzBydt;
+					 tmpZ[0]=Fz*Wr[0]*factor[0];
+					 tmpZ[1]=Fz*Wr[1]*factor[1];
+					 for(jj=0; jj<2; jj++)
+					    D->JzR[0][gridI][jj+gridJ+jstart]+=tmpZ[jj];
+					 for(m=1; m<numMode; m++) 
+					    for(jj=jjstart; jj<2; jj++) {
+						    D->JzR[m][gridI][jj+gridJ+jstart]+=tmpZ[jj]*coss[m]*alpha;
+							 D->JzI[m][gridI][jj+gridJ+jstart]-=tmpZ[jj]*sins[m]*alpha;
+						 }
 
-				  }
+				 }
 
-          p=p->next;
-        }    //End of while(p)
+             p=p->next;
+          }    //End of while(p)
 
-      }    //End of for(s)     
+       }    //End of for(s)     
 
 }
 

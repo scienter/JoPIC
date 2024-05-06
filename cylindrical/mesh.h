@@ -32,8 +32,6 @@
 typedef struct _Domain 
 {
    int dimension;
-	int filterEr,filterEp,filterBr,filterBp;
-	int filterPr,filterPl,filterSr,filterSl;
 	int consCheck;
 
    int fieldType;
@@ -287,8 +285,6 @@ void restoreIntMeta(char *fileName,char *dataName,int *data,int dataCnt);
 void solveF(Domain D);
 void solveCharge(Domain *D,LoadList *LL,double ***rhoR,double ***rhoI,int istart,int iend,int jstart,int jend,int s,double coef);
 void movingPairCharge(Domain *D);
-void filter(Domain *D,double ***dataR,double ***dataI);
-void filterFieldC(Domain *D);
 void ionizationSetup(LoadList *LL,int species);
 void fieldIonization(Domain *D,int iteration);
 double randomValue(double beta);
@@ -317,9 +313,6 @@ void MPI_TransferJ_Period_X(Domain *D,double ***f1,double ***f2,double ***f3,dou
 // void MPI_TransferJ_Period_X(Domain *D,int numField);
 
 void calConservation(Domain D,int iteration);
-void filter_current(Domain *D,double ***val,double ***J,int iter);
-void MPI_filter_Xminus(Domain *D,double ***f1,int ny,int share,int m);
-void MPI_filter_Xplus(Domain *D,double ***f1,int ny,int share,int m);
 void saveDensityProfile(Domain *D);
 void MPI_Transfer8F_Period_X(Domain *D,double ***f1,double ***f2,double ***f3,double ***f4,double ***f5,double ***f6,double ***f7,double ***f8,int ny,int share);
 void MPI_Transfer12F_Period_X(Domain *D,double ***f1,double ***f2,double ***f3,double ***f4,double ***f5,double ***f6,double ***f7,double ***f8,double ***f9,double ***f10,double ***f11,double ***f12,int ny,int share);

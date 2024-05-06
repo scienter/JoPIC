@@ -35,7 +35,7 @@ void loadBeam(Domain *D,LoadList *LL,int s,int iteration)
 
 void loadBeamPlasma(Domain *D,LoadList *LL,int s,int iteration)
 {
-   int l,ii,jj,i,j,istart,iend,jstart,jend,flag,cnt,n,nn;
+   int l,ii,jj,i,j,istart,iend,jstart,jend,flag,cnt,n,nn,m,numMode;
    int minZSub,minYSub,indexJ;
    double dt,dz,dr,dZ,dR,lambda,weight,charge,weightCoef,delT,coefEr,unitE,invGam2;
 	double x,y,r,rr,z,phi,vz,px,py,pz,nenergy,positionZ,positionR,testR,posZ;
@@ -50,6 +50,7 @@ void loadBeamPlasma(Domain *D,LoadList *LL,int s,int iteration)
 
    ptclList *New,*p;   
 
+   numMode=D->numMode;
    istart=D->istart; iend=D->iend;
    jstart=D->jstart; jend=D->jend;
    minZSub=D->minXSub;   minYSub=D->minYSub;
@@ -274,8 +275,8 @@ void loadBeamPlasma(Domain *D,LoadList *LL,int s,int iteration)
            z=p->z;   x=p->x;   y=p->y;
            r=sqrt(x*x+y*y);   invR=1.0/r;
            index=j-jstart;
-           if(r<0) Wr[0]=(r*r-r+0.5)/(2.0*r*r+0.5);
-           else    Wr[0]=(1.0-r)*0.5;
+           if(r<0.5) Wr[0]=(r*r-r+0.5)/(2.0*r*r+0.5);
+           else      Wr[0]=(1.0-r)*0.5;
            Wr[1]=1.0-Wr[0];
            Wz[1]=z-(int)(z);              Wz[0]=1.0-Wz[1];
 
@@ -299,9 +300,13 @@ void loadBeamPlasma(Domain *D,LoadList *LL,int s,int iteration)
        MPI_TransferBeamDen_Xplus(D,den,D->nySub+5,3);
        MPI_TransferBeamDen_Xminus(D,den,D->nySub+5,3);
 	  } else ;
+     if(nTasks>1)  {     
+       MPI_TransferBeamField_Xplus(D,den,D->nySub+5,3);
+       MPI_TransferBeamField_Xminus(D,den,D->nySub+5,3);
+	  } else ;
 
      // Cal Er
-     for(i=istart; i<iend; i++) {
+     for(i=1; i<iend+1; i++) {
 		 j=jstart;
 		   Er[i][j]=0.0;  
        for(j=jstart+1; j<jend+3; j++) {
@@ -345,20 +350,22 @@ void loadBeamPlasma(Domain *D,LoadList *LL,int s,int iteration)
      case NoCherenkov :
        for(i=istart-1; i<iend+3; i++) 
          for(j=jstart; j<jend+3; j++) {
-           D->EzR[0][i][j]+=Ez[i][j]*unitE;
-           D->ErR[0][i][j]-=Er[i][j]*unitE;
-           D->BpR[0][i][j]-=Bp[i][j]*unitE;
+           D->EzR[0][i][j]+=Ez[i][j];
+           D->ErR[0][i][j]-=Er[i][j];
+           D->BpR[0][i][j]-=Bp[i][j];
 //           D->EzR[0][i][j]+=0.5*(Ez[i-1][j]+Ez[i][j])*unitE;
 //           D->ErR[0][i][j]-=0.5*(Er[i-1][j]+Er[i-1][j+1])*unitE;
 //           D->BpR[0][i][j]-=0.5*(Bp[i-1][j]+Bp[i-1][j+1])*unitE;
 	 }
        break;
      case Split :
+       
        for(i=istart-1; i<iend+3; i++) 
          for(j=jstart; j<jend+3; j++) {
-           D->EzR[0][i][j]+=Ez[i][j]*unitE;				
-           D->PrR[0][i][j]-=(Er[i][j]+Bp[i][j])*unitE;
-           D->PlR[0][i][j]-=(Er[i][j]-Bp[i][j])*unitE;
+           D->EzR[0][i][j]+=Ez[i][j]*unitE;	
+           D->EzNowR[0][i][j]+=Ez[i][j]*unitE;	
+           D->PrR[0][i][j]+=(Er[i][j]+Bp[i][j])*unitE;
+           D->PlR[0][i][j]+=(Er[i][j]-Bp[i][j])*unitE;
 //           D->PrR[0][i][j]-=0.5*(Er[i][j]+Bp[i][j]+Er[i][j+1]+Bp[i][j+1])*unitE;
 //           D->PlR[0][i][j]-=0.5*(Er[i][j]-Bp[i][j]+Er[i][j+1]-Bp[i][j+1])*unitE;
 	 		}
@@ -368,19 +375,71 @@ void loadBeamPlasma(Domain *D,LoadList *LL,int s,int iteration)
 
    }
 
-/*
-   FILE *out;
-	out=fopen("density","w");
-   for(i=istart; i<iend; i++) {
-     for(j=jstart; j<jend; j++) {
-		  z=(i-istart+D->minXDomain)*dZ;
-		  r=(j-jstart+D->minYDomain)*dR;
-		  fprintf(out,"%g %g %g %g %g\n",z,r,den[i][j],Er[i][j]*unitE,Ez[i][j]*unitE);
-	  }
-	  fprintf(out,"\n");
+   LL=D->loadList; s=0;
+   while(LL->next)      {
+      if(LL->type==Beam)
+         solveCharge(D,LL,D->RhoNoPairR,D->RhoNoPairI,istart,iend,jstart,jend,s,1.0);
+      else ;
+      LL=LL->next; s++;
    }
-	fclose(out);
-*/
+   D->shareF[0]=D->RhoNoPairR;
+   MPI_TransferJNew_Xplus(D,1,D->nySub+5,3);
+   MPI_TransferJNew_Xminus(D,1,D->nySub+5,3);
+   if(D->Period==ON) { MPI_TransferJNew_Period_X(D,1,D->nySub+5,3); } else ;
+   D->RhoNoPairR=D->shareF[0];
+
+   D->shareF[0]=D->RhoNoPairR;
+   MPI_TransferFNew_Xplus(D,1,D->nySub+5,3);
+   MPI_TransferFNew_Xminus(D,1,D->nySub+5,3);
+   if(D->Period==ON) { MPI_TransferFNew_Period_X(D,1,D->nySub+5,3); } else ;
+   D->RhoNoPairR=D->shareF[0];
+
+   switch(D->fieldType)  {
+   case Yee :
+   case NoCherenkov :
+     for(i=istart-1; i<iend+3; i++) 
+       for(j=jstart; j<jend+3; j++) {
+         D->EzR[0][i][j]+=Ez[i][j];
+         D->ErR[0][i][j]-=Er[i][j];
+         D->BpR[0][i][j]-=Bp[i][j];
+	    }
+       break;
+   case Split :       
+     m=0;
+       for(i=istart-1; i<iend+2; i++) 
+         for(j=jstart+1; j<jend+3; j++) {
+           r=j-jstart;
+           D->PrR[m][i][j]=2*r/(r+0.5)*(
+                             M_PI*dr*(D->RhoNoPairR[m][i+1][j]+D->RhoNoPairR[m][i][j])
+                             -dr/dz*(D->EzR[m][i+1][j]-D->EzR[m][i][j])
+                           ) +(r-0.5)/(r+0.5)*D->PrR[m][i][j-1];
+	 		}
+       j=jstart;
+       for(i=istart-1; i<iend+2; i++) { 
+           D->PrR[m][i][j]=0.5*D->PrR[m][i][j];
+	    }
+     break;
+   }	
+   D->shareF[0]=D->PrR;
+   MPI_TransferFNew_Xplus(D,1,D->nySub+5,3);
+   MPI_TransferFNew_Xminus(D,1,D->nySub+5,3);
+   if(D->Period==ON) { MPI_TransferFNew_Period_X(D,1,D->nySub+5,3); } else ;
+   D->PrR=D->shareF[0];
+   
+//lala
+
+   //FILE *out;
+	//out=fopen("density","w");
+   //for(i=istart; i<iend; i++) {
+   //  for(j=jstart; j<jend; j++) {
+	//	  z=(i-istart+D->minXDomain)*dZ;
+	//	  r=(j-jstart+D->minYDomain)*dR;
+	//	  fprintf(out,"%g %g %g %g %g\n",z,r,den[i][j],Er[i][j]*unitE,Ez[i][j]*unitE);
+	//  }
+	//  fprintf(out,"\n");
+   //}
+	//fclose(out);
+
 
 
    for(i=0; i<D->nxSub+5; i++) {
@@ -429,7 +488,7 @@ void MPI_TransferBeamField_Xplus(Domain *D,double **f1,int ny,int share)
   istart=D->istart; iend=D->iend;
   jstart=D->istart; jend=D->iend;
 
-  num=ny*2;
+  num=ny*(share-1);
   data = (double *)malloc(num*sizeof(double ));
 
   //Transferring even ~ odd cores
@@ -462,7 +521,7 @@ void MPI_TransferBeamField_Xplus(Domain *D,double **f1,int ny,int share)
     MPI_Recv(data,num,MPI_DOUBLE,D->prevXrank,D->prevXrank,MPI_COMM_WORLD,&status);	  
     start=0;
     for(i=1; i<share; i++) {
-      for(j=0; j<ny; j++)  f1[istart-i][j]+=data[j+start];  start+=ny;
+      for(j=0; j<ny; j++)  f1[istart-i][j]=data[j+start];  start+=ny;
     }
   }
   else if(myrank%2==1 && myrank!=nTasks-1)
@@ -486,7 +545,7 @@ void MPI_TransferBeamField_Xminus(Domain *D,double **f1,int ny,int share)
   istart=D->istart; iend=D->iend;
   jstart=D->istart; jend=D->iend;
 
-  num=ny*3;
+  num=ny*share;
   data = (double *)malloc(num*sizeof(double ));
 
   //Transferring even ~ odd cores
@@ -500,7 +559,7 @@ void MPI_TransferBeamField_Xminus(Domain *D,double **f1,int ny,int share)
     MPI_Recv(data,num,MPI_DOUBLE,D->nextXrank,D->nextXrank,MPI_COMM_WORLD,&status);	  
     start=0;
     for(i=0; i<share; i++) {
-      for(j=0; j<ny; j++)  f1[iend+i][j]+=data[j+start];  start+=ny;
+      for(j=0; j<ny; j++)  f1[iend+i][j]=data[j+start];  start+=ny;
     }
   }
   else if(myrank%2==1)
@@ -519,7 +578,7 @@ void MPI_TransferBeamField_Xminus(Domain *D,double **f1,int ny,int share)
     MPI_Recv(data,num,MPI_DOUBLE,D->nextXrank,D->nextXrank,MPI_COMM_WORLD,&status);	  
     start=0;
     for(i=0; i<share; i++) {
-      for(j=0; j<ny; j++)  f1[iend+i][j]+=data[j+start];  start+=ny;
+      for(j=0; j<ny; j++)  f1[iend+i][j]=data[j+start];  start+=ny;
     }
   }
   else if(myrank%2==0 && myrank!=0)
@@ -544,7 +603,7 @@ void MPI_TransferBeamDen_Xplus(Domain *D,double **f1,int ny,int share)
   istart=D->istart; iend=D->iend;
   jstart=D->istart; jend=D->iend;
 
-  num=ny*3;
+  num=ny*share;
   data = (double *)malloc(num*sizeof(double ));
 
   //Transferring even ~ odd cores
@@ -601,7 +660,7 @@ void MPI_TransferBeamDen_Xminus(Domain *D,double **f1,int ny,int share)
   istart=D->istart; iend=D->iend;
   jstart=D->istart; jend=D->iend;
 
-  num=ny*2;
+  num=ny*(share-1);
   data = (double *)malloc(num*sizeof(double ));
 
   //Transferring even ~ odd cores

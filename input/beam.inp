@@ -23,7 +23,7 @@
 
 
 [PML]
- pml=ON
+ pml=OFF
  pml_start=1000			//when PML start, unit is iteration step
  left_pml_cells=1		//not work
  right_pml_cells=1		//not work
@@ -46,12 +46,12 @@
  field_ionization=OFF		//ON, OFF
 
  max_time=2600			//[minute]	not work
- max_step=40000
- save_step=1000
- save_start=1000
- center_save_step=1000		//it will save center field file.
+ max_step=500
+ save_step=100
+ save_start=0
+ center_save_step=100		//it will save center field file.
 
- L=112				//how many cores?
+ L=4				//how many cores?
  M=1				//not work
  N=1				//not work
 
@@ -59,15 +59,15 @@
  moving_velocity=1.0		//moving domain velocity. 1 is C.
 
  minX=0
- maxX=200e-6
+ maxX=100e-6
  minY=0e-6			//must be 0
- maxY=500e-6
+ maxY=200e-6
  minZ=-30e-6			//not work
  maxZ=30e-6			//not work
  lambda=4e-6
  division_lambda=10		// dx is [wavelength/divisionLambda]
  dt_ratio=1.0			// recommand below 0.96
- dF=0.0			// If you want Marder's method, dF=0.01 or 0.02 ...
+ dF=0.02			// coeffcient of Marder's method (default), dF=0.01 or 0.02 ...
 
  dr_over_dz = 2		// dr/dz=10
 
@@ -114,14 +114,14 @@
  num_energy_interval=1
 
  norm_emittance_r=0.5	// [mm mrad]
- beta_r=4.65
- alpha_r=7
+ beta_r=1.65
+ alpha_r=4
  peak_current=2.6	// [A] 
- position_z=100e-6	// [m]
+ position_z=50e-6	// [m]
 
  gaussian_ONOFF=ON
  gaussina_power=4
- gaussian_sigma_z=25e-6
+ gaussian_sigma_z=10e-6
 
 [PlasmaLens]
  radius=500e-6          //[m]
