@@ -53,6 +53,11 @@ void cleanMemory(Domain *D)
     {
       switch (LL->type)  {
       case Polygon :
+        if(LL->ChXnodes>0)
+        {
+          free(LL->ChXpoint);	
+          free(LL->ChXn);	
+        }
         if(LL->xnodes>0)
         {
           free(LL->xpoint);	

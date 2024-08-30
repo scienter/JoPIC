@@ -69,6 +69,9 @@ typedef struct _LoadList  {
    double *zn;      //transverse density (1 is P->density)
    double *zpoint;    //transverse point
    double givenMinPx;	//for saveParticle option
+   int ChXnodes;     //longitudinal point number for chaanel
+   double *ChXn;      //longitudinal coef. value for channel
+   double *ChXpoint;    //longitudinal point for channel
 
    //initial momentum distribution
    double z0,pz0;

@@ -5,16 +5,16 @@ OBJS = main.o parameterSetting.o findparam.o boundary.o saveFile.o fieldSolve.o 
 
 
 #-------- for Beam server ----------# 
-#CFLAGS = -I/opt/gsl/2.6/include -I/opt/hdf5/1.10.3/include 
-#LDFLAGS = -L/opt/gsl/2.6/lib -L/opt/hdf5/1.10.3/lib
+CFLAGS = -I/opt/gsl/2.6/include -I/opt/hdf5/1.10.3/include 
+LDFLAGS = -L/opt/gsl/2.6/lib -L/opt/hdf5/1.10.3/lib
 
 #-------- for PAL ----------#
 #CFLAGS = -I/home/scienter/gsl2.6/include -I/usr/lib/x86_64-linux-gnu/hdf5/openmpi/include
 #LDFLAGS = -L/home/scienter/gsl2.6/lib -L/usr/lib/x86_64-linux-gnu/hdf5/openmpi
 
 #-------- for home computer ----------#
-CFLAGS= -I/usr/include/hdf5/openmpi
-LDFLAGS= -L/usr/lib/x86_64-linux-gnu/hdf5/openmpi
+#CFLAGS= -I/usr/include/hdf5/openmpi
+#LDFLAGS= -L/usr/lib/x86_64-linux-gnu/hdf5/openmpi
 
 
 

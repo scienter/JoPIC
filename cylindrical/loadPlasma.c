@@ -74,8 +74,8 @@ void loadPolygonPlasma(Domain *D,LoadList *LL,int s,int iteration,int istart,int
    int n,i,j,numberRZ,numPhi,cnt,l,t,index,ii,jj,nn;
    int modeX,modeYZ,minRSub,minZSub;
    double z,r,R,posX,posY,posZ,minZ,maxZ,v1,v2,v3,tmp,weight,charge;
-   double ne,randTest,positionZ,positionR,dPhi,phi,z0,cosPhi,sinPhi,channelCoef;
-	double density,rr[2],zz[2],tmpR;
+   double ne,randTest,positionZ,positionR,dPhi,phi,z0,cosPhi,sinPhi,channelCoef,ChCoef;
+   double density,rr[2],zz[2],tmpR;
    int myrank;
    MPI_Comm_rank(MPI_COMM_WORLD, &myrank);
    Particle **particle;
@@ -95,13 +95,19 @@ void loadPolygonPlasma(Domain *D,LoadList *LL,int s,int iteration,int istart,int
 
    srand((iteration+1)+myrank);
 
-       gsl_qrng *q = gsl_qrng_alloc (gsl_qrng_sobol,2);
+   gsl_qrng *q = gsl_qrng_alloc (gsl_qrng_sobol,2);
    //position define      
-   for(i=istart; i<iend; i++)
+   for(i=istart; i<iend; i++)  
+   {
+     posX=(double)(i+D->minXSub-istart);
+     for(l=0; l<LL->ChXnodes-1; l++) {
+       if(posX>=LL->ChXpoint[l] && posX<LL->ChXpoint[l+1])  
+         ChCoef=((LL->ChXn[l+1]-LL->ChXn[l])/(LL->ChXpoint[l+1]-LL->ChXpoint[l])*(posX-LL->ChXpoint[l])+LL->ChXn[l]);
+       else ChCoef=1.0;
+     }
+
      for(j=jstart; j<jend; j++)
      {
-
-
        for(l=0; l<LL->xnodes-1; l++)
          for(t=0; t<LL->ynodes-1; t++)
          {
@@ -113,9 +119,8 @@ void loadPolygonPlasma(Domain *D,LoadList *LL,int s,int iteration,int istart,int
            {
              ne=((LL->xn[l+1]-LL->xn[l])/(LL->xpoint[l+1]-LL->xpoint[l])*(posX-LL->xpoint[l])+LL->xn[l]);
              ne*=((LL->yn[t+1]-LL->yn[t])/(LL->ypoint[t+1]-LL->ypoint[t])*(posY-LL->ypoint[t])+LL->yn[t]);
-				 ne*=(1.0+channelCoef*posY*posY);
-
-				 weight=ne/(double)(numPhi*numberRZ);
+             ne*=(1.0+ChCoef*channelCoef*posY*posY);
+             weight=ne/(double)(numPhi*numberRZ);
              dPhi=2.0*M_PI/((double)numPhi);
  
              jj=j-jstart;
@@ -191,8 +196,9 @@ void loadPolygonPlasma(Domain *D,LoadList *LL,int s,int iteration,int istart,int
            }	
          } 		//end of for(lnodes)  
 
-     }			//End of for(i,j)
-     gsl_qrng_free(q);
+     }			//End of for(j)
+   }			//End of for(i)
+   gsl_qrng_free(q);
 
 }
 

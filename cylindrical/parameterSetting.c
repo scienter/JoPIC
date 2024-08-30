@@ -703,6 +703,27 @@ int findLoadParameters(int rank, LoadList *LL,Domain *D,char *input)
           LL->density=atof(str);
           LL->density*=D->gamma;
         } else  { printf("in [Plasma], density=? [m-3]\n"); fail=1; }
+        if(FindParameters("Plasma",rank,"channel_Xnodes",input,str)) LL->ChXnodes=atoi(str);
+        else  LL->ChXnodes=0;
+        if(LL->ChXnodes>0)
+        {
+          LL->ChXpoint = (double *)malloc(LL->ChXnodes*sizeof(double));
+          LL->ChXn = (double *)malloc(LL->ChXnodes*sizeof(double));   
+          for(i=0; i<LL->ChXnodes; i++)
+          {
+            sprintf(name,"channel_X%d",i);
+            if(FindParameters("Plasma",rank,name,input,str)) 
+              LL->ChXpoint[i] = atof(str)/D->gamma/D->lambda/D->dz;
+            else 
+            { printf("channel_X%d should be defined.\n",i);  fail=1; }
+
+            sprintf(name,"channel_Xn%d",i);
+            if(FindParameters("Plasma",rank,name,input,str)) 
+              LL->ChXn[i] = atof(str);
+            else 
+            { printf("channel_Xn%d should be defined.\n",i);  fail=1; } 
+          }
+	} else ;
         if(FindParameters("Plasma",rank,"Xnodes",input,str)) LL->xnodes=atoi(str);
         else  {
           printf("in [Plasma], Xnodes=?\n");
