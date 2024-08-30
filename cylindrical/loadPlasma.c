@@ -103,7 +103,7 @@ void loadPolygonPlasma(Domain *D,LoadList *LL,int s,int iteration,int istart,int
      for(l=0; l<LL->ChXnodes-1; l++) {
        if(posX>=LL->ChXpoint[l] && posX<LL->ChXpoint[l+1])  
          ChCoef=((LL->ChXn[l+1]-LL->ChXn[l])/(LL->ChXpoint[l+1]-LL->ChXpoint[l])*(posX-LL->ChXpoint[l])+LL->ChXn[l]);
-       else ChCoef=1.0;
+       else ChCoef=0.0;
      }
 
      for(j=jstart; j<jend; j++)
