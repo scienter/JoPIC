@@ -48,16 +48,8 @@ void parameterSetting(Domain *D,External *Ext, char *input)
 
 
    //initially
-   if(FindParameters("Domain",1,"L",input,str)) D->L=atoi(str);
-   else  {
-      printf("in [Domain], L=?  (Sorry. Fix as L=1)\n");
-      fail=1;
-   }
-   if(FindParameters("Domain",1,"M",input,str)) D->M=atoi(str);
-   else  {
-      printf("in [Domain], M=?  (y directionally dividing number)\n");
-      fail=1;
-   }
+   D->L = nTasks;
+   D->M = 1;
    if(D->M*D->L!=nTasks)  {
      printf("L=%d, M=%d, check the values of L and M.\n",D->L,D->M);
      fail=1;

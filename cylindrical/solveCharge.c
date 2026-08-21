@@ -145,7 +145,7 @@ void solveF_Split(Domain *D,int iteration)
    	   upSrR=0.5*(D->SrR[m][i][j]  +D->SrR[m][i-1][j]);
    	   upSlR=0.5*(D->SlR[m][i][j]  +D->SlR[m][i-1][j]);
    	   D->FR[m][i][j]=
-   	     	invDr*(upPrR+upPlR)
+   	     	2*invDr*(upPrR+upPlR)
    	     	+0.5*invDz*(D->EzNowR[m][i+1][j]-D->EzNowR[m][i-1][j])
    	     	-2.0*M_PI*(D->RhoNoPairR[m][i][j]+D->RhoPairR[m][i][j]);
          //if(D->RhoNoPairR[m][i][j]-D->RhoPairR[m][i][j]!=0) {

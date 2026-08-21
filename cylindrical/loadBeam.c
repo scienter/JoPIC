@@ -144,7 +144,8 @@ void loadBeamPlasma(Domain *D,LoadList *LL,int s,int iteration)
           if(gamma<=lowGam) lowGam=gamma; else ;
 	       if(gamma>upGam) upGam=gamma; else ;				 
 
-			 pz=sqrt((gamma*gamma-1.0)/(1.0+2*rPrime*rPrime));
+			 pz=sqrt((gamma*gamma-1.0)/(1.0+xPrime*xPrime+yPrime*yPrime));
+			 //pz=sqrt(gamma*gamma-1.0);
    	    px=xPrime*pz;
           py=yPrime*pz;
 
@@ -327,7 +328,7 @@ void loadBeamPlasma(Domain *D,LoadList *LL,int s,int iteration)
      // Cal Ez
      invGam2=1.0/gamma0/gamma0;
      for(i=istart; i<iend; i++) 
-       for(j=jstart; j<jend+2; j++) {
+       for(j=jstart; j<jend; j++) {
          sum=0.0;
          for(jj=j; jj<jend; jj++)
            sum+=Er[i+1][jj]-Er[i-1][jj];
@@ -337,43 +338,50 @@ void loadBeamPlasma(Domain *D,LoadList *LL,int s,int iteration)
        MPI_TransferBeamField_Xplus(D,Ez,D->nySub+5,3);
        MPI_TransferBeamField_Xminus(D,Ez,D->nySub+5,3);
 	  } else ;
+     MPI_Barrier(MPI_COMM_WORLD);
 
      // Cal Bphi
 	  beta0=sqrt(1.0-invGam2);
      for(i=0; i<iend+3; i++) 
        for(j=0; j<jend+3; j++)
          Bp[i][j]=Er[i][j]*beta0;
+     if(nTasks>1)  {
+       MPI_TransferBeamField_Xplus(D,Bp,D->nySub+5,3);
+       MPI_TransferBeamField_Xminus(D,Bp,D->nySub+5,3);
+     } else ;
 
-	  int shift=-0;
-     switch(D->fieldType)  {
-     case Yee :
-     case NoCherenkov :
-       for(i=istart-1; i<iend+3; i++) 
-         for(j=jstart; j<jend+3; j++) {
-           D->EzR[0][i][j]+=Ez[i][j];
-           D->ErR[0][i][j]-=Er[i][j];
-           D->BpR[0][i][j]-=Bp[i][j];
-//           D->EzR[0][i][j]+=0.5*(Ez[i-1][j]+Ez[i][j])*unitE;
-//           D->ErR[0][i][j]-=0.5*(Er[i-1][j]+Er[i-1][j+1])*unitE;
-//           D->BpR[0][i][j]-=0.5*(Bp[i-1][j]+Bp[i-1][j+1])*unitE;
-	 }
-       break;
-     case Split :
-       
-       for(i=istart-1; i<iend+3; i++) 
-         for(j=jstart; j<jend+3; j++) {
-           D->EzR[0][i][j]+=Ez[i][j]*unitE;	
-           D->EzNowR[0][i][j]+=Ez[i][j]*unitE;	
-           D->PrR[0][i][j]+=(Er[i][j]+Bp[i][j])*unitE;
-           D->PlR[0][i][j]+=(Er[i][j]-Bp[i][j])*unitE;
-//           D->PrR[0][i][j]-=0.5*(Er[i][j]+Bp[i][j]+Er[i][j+1]+Bp[i][j+1])*unitE;
-//           D->PlR[0][i][j]-=0.5*(Er[i][j]-Bp[i][j]+Er[i][j+1]-Bp[i][j+1])*unitE;
-	 		}
-       break;
-     }	
 
 
    }
+	int shift=-0;
+   switch(D->fieldType)  {
+   case Yee :
+   case NoCherenkov :
+     for(i=istart-1; i<iend+3; i++) 
+       for(j=jstart; j<jend+3; j++) {
+         D->EzR[0][i][j]+=Ez[i][j];
+         D->ErR[0][i][j]-=Er[i][j];
+         D->BpR[0][i][j]-=Bp[i][j];
+//           D->EzR[0][i][j]+=0.5*(Ez[i-1][j]+Ez[i][j])*unitE;
+//           D->ErR[0][i][j]-=0.5*(Er[i-1][j]+Er[i-1][j+1])*unitE;
+//           D->BpR[0][i][j]-=0.5*(Bp[i-1][j]+Bp[i-1][j+1])*unitE
+       }
+     break;
+   case Split :
+       
+     for(i=istart-1; i<iend+1; i++) 
+       for(j=jstart; j<jend+3; j++) {
+         D->EzR[0][i][j]+=Ez[i][j]*unitE;	
+         D->EzNowR[0][i][j]+=Ez[i][j]*unitE;	
+         D->PrR[0][i][j]+=(Er[i][j]+Bp[i][j])*unitE;
+         D->PlR[0][i][j]+=(Er[i][j]-Bp[i][j])*unitE;
+//           D->PrR[0][i][j]-=0.5*(Er[i][j]+Bp[i][j]+Er[i][j+1]+Bp[i][j+1])*unitE;
+//           D->PlR[0][i][j]-=0.5*(Er[i][j]-Bp[i][j]+Er[i][j+1]-Bp[i][j+1])*unitE;
+       }
+
+     break;
+   }	
+
 
    LL=D->loadList; s=0;
    while(LL->next)      {
@@ -388,11 +396,11 @@ void loadBeamPlasma(Domain *D,LoadList *LL,int s,int iteration)
    if(D->Period==ON) { MPI_TransferJNew_Period_X(D,1,D->nySub+5,3); } else ;
    D->RhoNoPairR=D->shareF[0];
 
-   D->shareF[0]=D->RhoNoPairR;
-   MPI_TransferFNew_Xplus(D,1,D->nySub+5,3);
-   MPI_TransferFNew_Xminus(D,1,D->nySub+5,3);
-   if(D->Period==ON) { MPI_TransferFNew_Period_X(D,1,D->nySub+5,3); } else ;
-   D->RhoNoPairR=D->shareF[0];
+   //D->shareF[0]=D->RhoNoPairR;
+   //MPI_TransferFNew_Xplus(D,1,D->nySub+5,3);
+   //MPI_TransferFNew_Xminus(D,1,D->nySub+5,3);
+   //if(D->Period==ON) { MPI_TransferFNew_Period_X(D,1,D->nySub+5,3); } else ;
+   //D->RhoNoPairR=D->shareF[0];
 
    switch(D->fieldType)  {
    case Yee :

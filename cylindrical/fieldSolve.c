@@ -55,7 +55,7 @@ void fieldSolve2(Domain D,double t,int iteration)
    	D.BpI=D.shareF[3];
    	D.BzR=D.shareF[4];
    	D.BzI=D.shareF[5];
-
+/*
    	D.shareF[0]=D.BrR;
    	D.shareF[1]=D.BrI;
    	D.shareF[2]=D.BpR;
@@ -72,12 +72,32 @@ void fieldSolve2(Domain D,double t,int iteration)
    	D.BpI=D.shareF[3];
    	D.BzR=D.shareF[4];
    	D.BzI=D.shareF[5];
+*/
     	//MPI_Transfer12F_Xminus(&D,D.BzR,D.BrR,D.BpR,D.BzI,D.BrI,D.BpI,D.BzNowR,D.BrNowR,D.BpNowR,D.BzNowI,D.BrNowI,D.BpNowI,D.nySub+5,3);
     	//MPI_Transfer12F_Xplus(&D,D.BzR,D.BrR,D.BpR,D.BzI,D.BrI,D.BpI,D.BzNowR,D.BrNowR,D.BpNowR,D.BzNowI,D.BrNowI,D.BpNowI,D.nySub+5,3);
     	//if(D.Period==ON)
     	//  MPI_Transfer12F_Period_X(&D,D.BzR,D.BrR,D.BpR,D.BzI,D.BrI,D.BpI,D.BzNowR,D.BrNowR,D.BpNowR,D.BzNowI,D.BrNowI,D.BpNowI,D.nySub+5,3);
       
       Yee_Now(&D,iteration);
+
+   	// Br/Bp/Bz Now are snapshotted only on [istart,iend) in Bsolve_Yee() but
+   	// averaged over the whole array in Yee_Now(), so their guard cells are stale.
+   	// interpolation_Yee_1st() gathers them for the particle force.
+   	D.shareF[0]=D.BrNowR;
+   	D.shareF[1]=D.BrNowI;
+   	D.shareF[2]=D.BpNowR;
+   	D.shareF[3]=D.BpNowI;
+   	D.shareF[4]=D.BzNowR;
+   	D.shareF[5]=D.BzNowI;
+   	MPI_TransferFNew_Xplus(&D,6,D.nySub+5,3);
+   	MPI_TransferFNew_Xminus(&D,6,D.nySub+5,3);
+	 	if(D.Period==ON) { MPI_TransferFNew_Period_X(&D,6,D.nySub+5,3); } else ;
+   	D.BrNowR=D.shareF[0];
+   	D.BrNowI=D.shareF[1];
+   	D.BpNowR=D.shareF[2];
+   	D.BpNowI=D.shareF[3];
+   	D.BzNowR=D.shareF[4];
+   	D.BzNowI=D.shareF[5];
     	break ;
 
 	case NoCherenkov :
@@ -113,7 +133,7 @@ void fieldSolve2(Domain D,double t,int iteration)
    	D.EzI=D.shareF[1];
    	D.BzR=D.shareF[2];
    	D.BzI=D.shareF[3];
-
+/*
    	D.shareF[0]=D.EzR;
    	D.shareF[1]=D.EzI;
    	D.shareF[2]=D.BzR;
@@ -126,8 +146,23 @@ void fieldSolve2(Domain D,double t,int iteration)
       D.EzI=D.shareF[1];
       D.BzR=D.shareF[2];
       D.BzI=D.shareF[3];      
-
+*/
       EzBz_Now_Split(&D,iteration);
+
+   	// EzNow/BzNow are snapshotted only on [istart,iend) in EzBz_solve_Split(),
+   	// so their guard cells are stale. solveF_Split() reads EzNow[i+-1] and would
+   	// otherwise produce wrong F in the cells next to an MPI boundary.
+   	D.shareF[0]=D.EzNowR;
+   	D.shareF[1]=D.EzNowI;
+   	D.shareF[2]=D.BzNowR;
+   	D.shareF[3]=D.BzNowI;
+   	MPI_TransferFNew_Xplus(&D,4,D.nySub+5,3);
+   	MPI_TransferFNew_Xminus(&D,4,D.nySub+5,3);
+	 	if(D.Period==ON) { MPI_TransferFNew_Period_X(&D,4,D.nySub+5,3); } else ;
+   	D.EzNowR=D.shareF[0];
+   	D.EzNowI=D.shareF[1];
+   	D.BzNowR=D.shareF[2];
+   	D.BzNowI=D.shareF[3];
       
 		break ;
 	}
@@ -172,7 +207,7 @@ void fieldSolve1(Domain D,double t,int iteration)
    	D.EpI=D.shareF[3];
    	D.EzR=D.shareF[4];
    	D.EzI=D.shareF[5];
-
+/*
    	D.shareF[0]=D.ErR;
    	D.shareF[1]=D.ErI;
    	D.shareF[2]=D.EpR;
@@ -189,6 +224,7 @@ void fieldSolve1(Domain D,double t,int iteration)
    	D.EpI=D.shareF[3];
    	D.EzR=D.shareF[4];
    	D.EzI=D.shareF[5];
+*/
   	  	break ;
 
   	case NoCherenkov :
@@ -221,7 +257,7 @@ void fieldSolve1(Domain D,double t,int iteration)
    	D.PlI=D.shareF[5];
    	D.SlR=D.shareF[6];
    	D.SlI=D.shareF[7]; 
-
+/*
    	D.shareF[0]=D.PrR;
    	D.shareF[1]=D.PrI;
    	D.shareF[2]=D.SrR;
@@ -242,7 +278,7 @@ void fieldSolve1(Domain D,double t,int iteration)
    	D.PlI=D.shareF[5];
    	D.SlR=D.shareF[6];
    	D.SlI=D.shareF[7]; 
-
+*/
    	break ;
   	}
 }

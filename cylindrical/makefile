@@ -5,7 +5,7 @@ OBJS = main.o parameterSetting.o findparam.o boundary.o saveFile.o fieldSolve.o 
 
 
 #-------- for Beam server ----------# 
-CFLAGS = -I/opt/gsl/2.8/include -I/opt/hdf5/1.14.5/include 
+CFLAGS = -O3 -march=native -I/opt/gsl/2.8/include -I/opt/hdf5/1.14.5/include 
 LDFLAGS = -L/opt/gsl/2.8/lib -L/opt/hdf5/1.14.5/lib
 
 #-------- for PAL ----------#

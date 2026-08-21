@@ -180,37 +180,40 @@ void movingDomain_Cylind(Domain *D,int iteration)
             D->FI[m][i][j]=D->FI[m][i+1][j];
           }
       */ 
-      size_t count = (iend + 2)*(jend+3) * sizeof(double);  // 복사할 바이트 수  
-      for(m=0; m<numMode; m++) {
-        memmove(D->EzR[m][0],     D->EzR[m][1],     count);
-        memmove(D->EzI[m][0],     D->EzI[m][1],     count);
-        memmove(D->BzR[m][0],     D->BzR[m][1],     count);
-        memmove(D->BzI[m][0],     D->BzI[m][1],     count);
-        memmove(D->PrR[m][0],     D->PrR[m][1],     count);
-        memmove(D->PrI[m][0],     D->PrI[m][1],     count);
-        memmove(D->PlR[m][0],     D->PlR[m][1],     count);
-        memmove(D->PlI[m][0],     D->PlI[m][1],     count);
-        memmove(D->SrR[m][0],     D->SrR[m][1],     count);
-        memmove(D->SrI[m][0],     D->SrI[m][1],     count);
-        memmove(D->SlR[m][0],     D->SlR[m][1],     count);
-        memmove(D->SlI[m][0],     D->SlI[m][1],     count);
-        memmove(D->EzNowR[m][0],     D->EzNowR[m][1],     count);
-        memmove(D->EzNowI[m][0],     D->EzNowI[m][1],     count);
-        memmove(D->BzNowR[m][0],     D->BzNowR[m][1],     count);
-        memmove(D->BzNowI[m][0],     D->BzNowI[m][1],     count);
-        memmove(D->JzR[m][0],     D->JzR[m][1],     count);
-        memmove(D->JzI[m][0],     D->JzI[m][1],     count);
-        memmove(D->JrR[m][0],     D->JrR[m][1],     count);
-        memmove(D->JrI[m][0],     D->JrI[m][1],     count);
-        memmove(D->JpR[m][0],     D->JpR[m][1],     count);
-        memmove(D->JpI[m][0],     D->JpI[m][1],     count);
-            //D->RhoNoPairR[m][i][j]=D->RhoNoPairR[m][i+1][j];
-            //D->RhoNoPairI[m][i][j]=D->RhoNoPairI[m][i+1][j];
-        memmove(D->RhoPairR[m][0],     D->RhoPairR[m][1],     count);
-        memmove(D->RhoPairI[m][0],     D->RhoPairI[m][1],     count);
-        memmove(D->FR[m][0],     D->FR[m][1],     count);
-        memmove(D->FI[m][0],     D->FI[m][1],     count);
-      }   
+      // NOTE: memoryAsign() allocates each row with its own malloc, so the
+      //       field arrays are NOT contiguous. Shift row by row.
+      size_t count = (jend+3) * sizeof(double);   // bytes of one row (= nySub+5 doubles)
+      for(m=0; m<numMode; m++)
+        for(i=0; i<iend+2; i++) {
+          memcpy(D->EzR[m][i], D->EzR[m][i+1], count);
+          memcpy(D->EzI[m][i], D->EzI[m][i+1], count);
+          memcpy(D->BzR[m][i], D->BzR[m][i+1], count);
+          memcpy(D->BzI[m][i], D->BzI[m][i+1], count);
+          memcpy(D->PrR[m][i], D->PrR[m][i+1], count);
+          memcpy(D->PrI[m][i], D->PrI[m][i+1], count);
+          memcpy(D->PlR[m][i], D->PlR[m][i+1], count);
+          memcpy(D->PlI[m][i], D->PlI[m][i+1], count);
+          memcpy(D->SrR[m][i], D->SrR[m][i+1], count);
+          memcpy(D->SrI[m][i], D->SrI[m][i+1], count);
+          memcpy(D->SlR[m][i], D->SlR[m][i+1], count);
+          memcpy(D->SlI[m][i], D->SlI[m][i+1], count);
+          memcpy(D->EzNowR[m][i], D->EzNowR[m][i+1], count);
+          memcpy(D->EzNowI[m][i], D->EzNowI[m][i+1], count);
+          memcpy(D->BzNowR[m][i], D->BzNowR[m][i+1], count);
+          memcpy(D->BzNowI[m][i], D->BzNowI[m][i+1], count);
+          memcpy(D->JzR[m][i], D->JzR[m][i+1], count);
+          memcpy(D->JzI[m][i], D->JzI[m][i+1], count);
+          memcpy(D->JrR[m][i], D->JrR[m][i+1], count);
+          memcpy(D->JrI[m][i], D->JrI[m][i+1], count);
+          memcpy(D->JpR[m][i], D->JpR[m][i+1], count);
+          memcpy(D->JpI[m][i], D->JpI[m][i+1], count);
+          memcpy(D->RhoPairR[m][i], D->RhoPairR[m][i+1], count);
+          memcpy(D->RhoPairI[m][i], D->RhoPairI[m][i+1], count);
+          memcpy(D->FR[m][i], D->FR[m][i+1], count);
+          memcpy(D->FI[m][i], D->FI[m][i+1], count);
+            //memcpy(D->RhoNoPairR[m][i], D->RhoNoPairR[m][i+1], count);
+            //memcpy(D->RhoNoPairI[m][i], D->RhoNoPairI[m][i+1], count);
+        }
 //      if(D->pmlUp==ON) {
 //        for(m=0; m<numMode; m++)
 //          for(i=istart-1; i<iend+1; i++) {
